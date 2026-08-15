@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>production</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --surface:#0c0c0c;
+    --surface-raised:#161616;
+    --border:#252525;
+    --text:#ffffff;
+    --text-dim:#8f8f8f;
+    --text-faint:#5c5c5c;
+    --blue:#00fffc;
+    --green:#47ff91;
+    --pink:#fdb2ff;
+    --gradient: linear-gradient(90deg, var(--blue), var(--green), var(--pink));
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    background:#000;
+    font-family:'Manrope', sans-serif;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    height:100%;
+    overscroll-behavior:none;
+  }
+  body{display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
+
+  .statusbar{
+    flex:0 0 auto;
+    padding-top:calc(var(--safe-top) + 6px);
+    height:calc(30px + var(--safe-top));
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding-left:20px; padding-right:20px; padding-bottom:6px;
+    font-size:12px; font-weight:600;
+  }
+
+  .app{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .screens{flex:1; min-height:0; position:relative;}
+  .screen{
+    position:absolute; inset:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    display:none;
+    padding-bottom:24px;
+  }
+  .screen.active{display:block;}
+
+  /* ---------- shared ---------- */
+  .px-icon{display:inline-grid; grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); gap:2px; width:16px; height:16px; flex:0 0 auto;}
+  .px-icon i{display:block; border-radius:1px;}
+  .px-icon.blue i:nth-child(1){background:var(--blue);} .px-icon.blue i:nth-child(2){background:#0a0a0a;} .px-icon.blue i:nth-child(3){background:#0a0a0a;} .px-icon.blue i:nth-child(4){background:var(--blue);}
+  .px-icon.green i:nth-child(1){background:var(--green);} .px-icon.green i:nth-child(2){background:#0a0a0a;} .px-icon.green i:nth-child(3){background:#0a0a0a;} .px-icon.green i:nth-child(4){background:var(--green);}
+  .px-icon.pink i:nth-child(1){background:var(--pink);} .px-icon.pink i:nth-child(2){background:#0a0a0a;} .px-icon.pink i:nth-child(3){background:#0a0a0a;} .px-icon.pink i:nth-child(4){background:var(--pink);}
+  .px-icon.mix i:nth-child(1){background:var(--blue);} .px-icon.mix i:nth-child(2){background:var(--green);} .px-icon.mix i:nth-child(3){background:var(--pink);} .px-icon.mix i:nth-child(4){background:#3a3a3a;}
+
+  .wordmark{display:flex; align-items:center; gap:6px; font-weight:700; font-size:16px; text-transform:lowercase;}
+  .wordmark .px-icon{width:14px; height:14px;}
+
+  .section-row{display:flex; align-items:center; justify-content:space-between; padding:0 20px; margin-bottom:12px;}
+  .section-title{font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-dim);}
+  .section-link{font-size:11px; font-weight:600; color:var(--text); text-transform:lowercase; opacity:.8;}
+
+  button{border:none; background:none; font-family:inherit; color:inherit; text-align:left; cursor:pointer;}
+
+  /* ---------- Home ---------- */
+  .home-head{padding:6px 20px 18px;}
+  .greet-eyebrow{font-size:11px; color:var(--text-dim); text-transform:lowercase; margin-bottom:4px;}
+  .greet-title{font-size:24px; font-weight:800; text-transform:lowercase; line-height:1.15;}
+  .greet-sub{margin-top:8px; font-size:12.5px; font-weight:300; color:var(--text-dim); line-height:1.5; max-width:280px;}
+
+  .search{margin:0 20px 22px; height:42px; border-radius:12px; background:var(--surface-raised); border:1px solid var(--border); display:flex; align-items:center; gap:10px; padding:0 14px; color:var(--text-faint); font-size:12.5px; font-weight:300;}
+
+  .continue-scroll{display:flex; gap:12px; overflow-x:auto; padding:0 20px 4px; margin-bottom:26px; scrollbar-width:none;}
+  .continue-scroll::-webkit-scrollbar{display:none;}
+  .continue-card{flex:0 0 auto; width:190px; border-radius:14px; background:var(--surface-raised); border:1px solid var(--border); overflow:hidden;}
+  .continue-thumb{height:96px; width:100%; position:relative; background:radial-gradient(circle at 30% 30%, rgba(0,255,252,.14), transparent 55%), radial-gradient(circle at 75% 70%, rgba(253,178,255,.12), transparent 55%), #141414;}
+  .play-dot{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  .play-dot span{width:30px; height:30px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center;}
+  .continue-body{padding:10px 12px 12px;}
+  .continue-tag{font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:5px;}
+  .continue-name{font-size:12.5px; font-weight:600; line-height:1.3; margin-bottom:9px;}
+  .progress-track{height:3px; width:100%; border-radius:2px; background:#242424; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--gradient); border-radius:2px;}
+
+  .dept-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 26px;}
+  .dept-card{border-radius:14px; background:var(--surface-raised); border:1px solid var(--border); padding:14px; display:flex; flex-direction:column; gap:20px; width:100%;}
+  .dept-top{display:flex; align-items:center; justify-content:space-between;}
+  .dept-count{font-size:10px; color:var(--text-faint); font-weight:600;}
+  .dept-name{font-size:13px; font-weight:700; text-transform:lowercase;}
+
+  .list-item{display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border); width:100%;}
+  .list-icon{width:36px; height:36px; border-radius:9px; background:var(--surface-raised); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .list-body{flex:1; min-width:0; text-align:left;}
+  .list-title{font-size:12.5px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .list-meta{font-size:10.5px; color:var(--text-faint); font-weight:300;}
+  .list-badge{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); flex:0 0 auto;}
+
+  /* ---------- Tabbar ---------- */
+  .tabbar{
+    flex:0 0 auto;
+    display:flex;
+    border-top:1px solid var(--border);
+    background:#000;
+    padding:10px 8px calc(12px + var(--safe-bottom));
+  }
+  .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10px; font-weight:600; text-transform:lowercase; color:var(--text-faint);}
+  .tab.active{color:var(--text);}
+  .tab-dot{width:5px; height:5px; border-radius:50%; background:transparent;}
+  .tab.active .tab-dot{background:var(--green);}
+
+  /* ---------- Library ---------- */
+  .lib-head{padding:6px 20px 14px;}
+  .lib-title{font-size:22px; font-weight:800; text-transform:lowercase; margin-bottom:12px;}
+  .grad-underline{height:2px; width:36px; background:var(--gradient); border-radius:2px; margin-bottom:14px;}
+  .filter-row{display:flex; gap:8px; overflow-x:auto; padding:0 20px 18px; scrollbar-width:none;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{flex:0 0 auto; padding:8px 14px; border-radius:999px; font-size:11.5px; font-weight:600; border:1px solid var(--border); color:var(--text-dim); text-transform:lowercase;}
+  .filter-chip.active{background:var(--text); color:#000; border-color:var(--text);}
+
+  /* ---------- Player ---------- */
+  .player-media{height:230px; position:relative; background:radial-gradient(circle at 25% 25%, rgba(0,255,252,.16), transparent 55%), radial-gradient(circle at 80% 75%, rgba(71,255,145,.14), transparent 50%), radial-gradient(circle at 60% 20%, rgba(253,178,255,.12), transparent 45%), #111;}
+  .player-back{position:absolute; top:16px; left:16px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center;}
+  .player-playbtn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  .player-playbtn span{width:56px; height:56px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center;}
+  .player-body{padding:20px 20px 0;}
+  .player-eyebrow{font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--green); margin-bottom:8px;}
+  .player-title{font-size:19px; font-weight:800; line-height:1.25; margin-bottom:10px;}
+  .player-meta{font-size:11.5px; color:var(--text-faint); font-weight:300; margin-bottom:18px;}
+  .scrub-track{height:3px; width:100%; border-radius:2px; background:#242424; margin-bottom:6px; position:relative;}
+  .scrub-fill{position:absolute; left:0; top:0; height:100%; width:38%; background:var(--gradient); border-radius:2px;}
+  .scrub-knob{position:absolute; left:38%; top:50%; transform:translate(-50%,-50%); width:10px; height:10px; border-radius:50%; background:#fff;}
+  .scrub-times{display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); margin-bottom:22px;}
+  .player-desc{font-size:12px; font-weight:300; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
+  .chapter-item{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .chapter-time{font-size:10.5px; color:var(--text-faint); font-weight:600; width:34px;}
+  .chapter-name{font-size:12px; font-weight:500;}
+
+  /* ---------- Schedule ---------- */
+  .sched-head{padding:6px 20px 14px;}
+  .sched-title{font-size:22px; font-weight:800; text-transform:lowercase; margin-bottom:12px;}
+  .state-toggle{display:flex; gap:6px; padding:0 20px 18px;}
+  .state-btn{flex:1; padding:8px 0; text-align:center; border-radius:9px; border:1px solid var(--border); font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint);}
+  .state-btn.active{background:var(--surface-raised); color:var(--text); border-color:#3a3a3a;}
+
+  .connect-card{margin:10px 20px 0; border:1px solid var(--border); border-radius:16px; background:var(--surface-raised); padding:26px 20px 24px; text-align:center; display:flex; flex-direction:column; align-items:center;}
+  .pc-mark{width:44px; height:44px; border-radius:12px; background:#141414; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:16px;}
+  .connect-title{font-size:15px; font-weight:700; margin-bottom:8px;}
+  .connect-body{font-size:12px; font-weight:300; color:var(--text-dim); line-height:1.6; max-width:230px; margin-bottom:22px;}
+  .connect-btn{width:100%; padding:13px 0; border-radius:10px; background:var(--text); color:#000; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;}
+  .connect-fine{margin-top:14px; font-size:10px; color:var(--text-faint); font-weight:300; line-height:1.5;}
+
+  .pc-linked-row, .cal-source-row{margin:0 20px 16px; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:11px; background:var(--surface-raised); border:1px solid var(--border);}
+  .pc-linked-dot{width:7px; height:7px; border-radius:50%; background:var(--green); flex:0 0 auto;}
+  .cal-source-dot{width:7px; height:7px; border-radius:50%; background:var(--blue); flex:0 0 auto;}
+  .pc-linked-text, .cal-source-text{font-size:11px; font-weight:500; color:var(--text-dim); flex:1;}
+  .pc-linked-text b, .cal-source-text b{color:var(--text); font-weight:700;}
+  .pc-linked-action{font-size:10px; font-weight:700; color:var(--text-faint); text-transform:lowercase;}
+
+  .plan-item{margin:0 20px 12px; border:1px solid var(--border); border-radius:14px; background:var(--surface-raised); overflow:hidden;}
+  .plan-top{display:flex; align-items:center; justify-content:space-between; padding:12px 14px 0;}
+  .plan-date{font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint);}
+  .plan-status{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px;}
+  .plan-status.confirmed{color:#04140f; background:var(--green);}
+  .plan-status.pending{color:#000; background:var(--pink);}
+  .plan-body{padding:8px 14px 14px;}
+  .plan-role{font-size:14px; font-weight:700; margin-bottom:3px;}
+  .plan-time{font-size:11.5px; color:var(--text-dim); font-weight:300; margin-bottom:12px;}
+  .plan-actions{display:flex; gap:8px;}
+  .plan-btn{flex:1; text-align:center; padding:9px 0; border-radius:8px; font-size:11px; font-weight:700; text-transform:lowercase;}
+  .plan-btn.link{display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; border:1px solid var(--border); color:var(--text);}
+  .served-status{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--green);}
+
+  .cal-event{display:flex; align-items:center; gap:12px; padding:11px 20px; border-bottom:1px solid var(--border);}
+  .cal-datebox{width:40px; height:40px; border-radius:9px; background:var(--surface-raised); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; flex:0 0 auto;}
+  .cal-datebox .mon{font-size:8px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint);}
+  .cal-datebox .day{font-size:14px; font-weight:800; line-height:1.1;}
+  .cal-event.birthday .cal-datebox{border-color:#4a2f47;}
+  .cal-event.birthday .cal-datebox .day{color:var(--pink);}
+  .cal-body{flex:1; min-width:0;}
+  .cal-title{font-size:12.5px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cal-meta{font-size:10.5px; color:var(--text-faint); font-weight:300;}
+  .cal-tag{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 7px; border-radius:999px; flex:0 0 auto; color:var(--text-dim); border:1px solid var(--border);}
+  .cal-event.birthday .cal-tag{color:var(--pink); border-color:#4a2f47;}
+
+  /* ---------- Team ---------- */
+  .team-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 20px;}
+  .team-card{border-radius:14px; background:var(--surface-raised); border:1px solid var(--border); padding:14px; display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
+  .team-avatar{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;}
+  .team-name{font-size:12.5px; font-weight:700;}
+  .team-role{font-size:10.5px; color:var(--text-faint); font-weight:300;}
+
+  /* ---------- test banner ---------- */
+  .test-banner{
+    margin:10px 20px 0;
+    padding:10px 12px;
+    border-radius:10px;
+    background:var(--surface-raised);
+    border:1px dashed #3a3a3a;
+    font-size:10.5px; font-weight:600; color:var(--text-dim);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+  <div class="statusbar"><span>9:41</span><span>●●●●</span></div>
+
+  <div class="app">
+    <div class="screens">
+
+      <!-- ============ HOME ============ -->
+      <div class="screen active" id="screen-home">
+        <div class="test-banner">test build · not connected to live data</div>
+        <div class="home-head">
+          <div class="wordmark"><span class="px-icon mix"><i></i><i></i><i></i><i></i></span>production</div>
+        </div>
+        <div class="home-head" style="padding-top:2px;">
+          <div class="greet-eyebrow">morning, jordan</div>
+          <div class="greet-title">ready for<br>sunday?</div>
+          <div class="greet-sub">everything you need to serve — training, run sheets and the latest team photos, in one place.</div>
+        </div>
+
+        <div class="search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c5c5c" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          search training, docs, photos
+        </div>
+
+        <div class="section-row"><div class="section-title">continue training</div><div class="section-link">see all</div></div>
+        <div class="continue-scroll">
+          <button class="continue-card" onclick="openPlayer()">
+            <div class="continue-thumb"><div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+            <div class="continue-body">
+              <div class="continue-tag">camera · video</div>
+              <div class="continue-name">framing a wide shot on the switcher</div>
+              <div class="progress-track"><div class="progress-fill" style="width:64%"></div></div>
+            </div>
+          </button>
+          <button class="continue-card" onclick="openPlayer()">
+            <div class="continue-thumb"><div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+            <div class="continue-body">
+              <div class="continue-tag">audio · video</div>
+              <div class="continue-name">ringing out stage monitors</div>
+              <div class="progress-track"><div class="progress-fill" style="width:22%"></div></div>
+            </div>
+          </button>
+        </div>
+
+        <div class="section-row"><div class="section-title">departments</div></div>
+        <div class="dept-grid">
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon blue"><i></i><i></i><i></i><i></i></span><span class="dept-count">18 items</span></div><div class="dept-name">camera</div></button>
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon green"><i></i><i></i><i></i><i></i></span><span class="dept-count">24 items</span></div><div class="dept-name">audio</div></button>
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon pink"><i></i><i></i><i></i><i></i></span><span class="dept-count">11 items</span></div><div class="dept-name">lighting</div></button>
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon mix"><i></i><i></i><i></i><i></i></span><span class="dept-count">9 items</span></div><div class="dept-name">q-sys</div></button>
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon blue"><i></i><i></i><i></i><i></i></span><span class="dept-count">13 items</span></div><div class="dept-name">ekidz</div></button>
+          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon green"><i></i><i></i><i></i><i></i></span><span class="dept-count">7 items</span></div><div class="dept-name">general knowledge</div></button>
+        </div>
+
+        <div class="section-row"><div class="section-title">recently added</div></div>
+        <button class="list-item" onclick="openPlayer()">
+          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+          <div class="list-body"><div class="list-title">soundcheck flow — new team walkthrough</div><div class="list-meta">audio · 6 min · added yesterday</div></div>
+        </button>
+        <button class="list-item" onclick="goTo('library')">
+          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="list-body"><div class="list-title">stage plot &amp; input list — winter series</div><div class="list-meta">pdf · 2 pages · added mon</div></div>
+        </button>
+        <button class="list-item" style="border-bottom:none;" onclick="goTo('library')">
+          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div>
+          <div class="list-body"><div class="list-title">team night — camera crew, jan 26</div><div class="list-meta">photos · 32 images</div></div>
+        </button>
+      </div>
+
+      <!-- ============ LIBRARY ============ -->
+      <div class="screen" id="screen-library">
+        <div class="lib-head">
+          <div class="lib-title">library</div>
+          <div class="grad-underline"></div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-chip active">all</div>
+          <div class="filter-chip">videos</div>
+          <div class="filter-chip">docs</div>
+          <div class="filter-chip">photos</div>
+          <div class="filter-chip">camera</div>
+          <div class="filter-chip">audio</div>
+          <div class="filter-chip">q-sys</div>
+          <div class="filter-chip">ekidz</div>
+          <div class="filter-chip">general knowledge</div>
+        </div>
+
+        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">framing a wide shot on the switcher</div><div class="list-meta">camera · 9 min</div></div><div class="list-badge">64%</div></button>
+        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="list-body"><div class="list-title">stage plot &amp; input list — winter series</div><div class="list-meta">audio · doc · 2 pages</div></div><div class="list-badge">new</div></button>
+        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div><div class="list-body"><div class="list-title">team night — camera crew, jan 26</div><div class="list-meta">photos · 32 images</div></div><div class="list-badge"></div></button>
+        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">ringing out stage monitors</div><div class="list-meta">audio · 12 min</div></div><div class="list-badge">22%</div></button>
+        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="list-body"><div class="list-title">lighting cue sheet template</div><div class="list-meta">lighting · doc · 1 page</div></div><div class="list-badge"></div></button>
+        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">livestream checklist, start to finish</div><div class="list-meta">q-sys · 14 min</div></div><div class="list-badge"></div></button>
+        <button class="list-item" style="border-bottom:none;"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div><div class="list-body"><div class="list-title">behind the scenes — christmas eve</div><div class="list-meta">photos · 58 images</div></div><div class="list-badge"></div></button>
+      </div>
+
+      <!-- ============ PLAYER ============ -->
+      <div class="screen" id="screen-player">
+        <div class="player-media">
+          <button class="player-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>
+        </div>
+        <div class="player-body">
+          <div class="player-eyebrow">camera · training</div>
+          <div class="player-title">framing a wide shot on the switcher</div>
+          <div class="player-meta">9 min · added by mia torres · 340 crew have watched</div>
+          <div class="scrub-track"><div class="scrub-fill"></div><div class="scrub-knob"></div></div>
+          <div class="scrub-times"><span>3:24</span><span>9:02</span></div>
+          <div class="player-desc">a quick walkthrough of when to call the wide shot, how to frame it against the stage, and the handoff cues to listen for from the switcher.</div>
+          <div class="section-title" style="margin-bottom:6px;">chapters</div>
+          <div class="chapter-item"><div class="chapter-time">0:00</div><div class="chapter-name">why the wide shot matters</div></div>
+          <div class="chapter-item"><div class="chapter-time">2:10</div><div class="chapter-name">framing against the stage</div></div>
+          <div class="chapter-item"><div class="chapter-time">5:40</div><div class="chapter-name">listening for the call</div></div>
+          <div class="chapter-item" style="border-bottom:none;"><div class="chapter-time">7:55</div><div class="chapter-name">common mistakes</div></div>
+        </div>
+      </div>
+
+      <!-- ============ SCHEDULE ============ -->
+      <div class="screen" id="screen-schedule">
+        <div class="sched-head"><div class="sched-title">schedule</div></div>
+        <div class="state-toggle">
+          <button class="state-btn" id="btn-not-connected" onclick="showSchedState('not-connected')">not connected</button>
+          <button class="state-btn active" id="btn-connected" onclick="showSchedState('connected')">connected</button>
+        </div>
+
+        <div id="sched-not-connected" style="display:none;">
+          <div class="connect-card">
+            <div class="pc-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8f8f8f" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></div>
+            <div class="connect-title">connect planning center</div>
+            <div class="connect-body">link your account to see the dates you're scheduled to serve and respond right from the app.</div>
+            <button class="connect-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>connect with planning center</button>
+            <div class="connect-fine">you'll be asked to sign in on planning center. no passwords are stored in this app.</div>
+          </div>
+        </div>
+
+        <div id="sched-connected">
+          <div class="pc-linked-row"><div class="pc-linked-dot"></div><div class="pc-linked-text">synced with <b>planning center</b> · jordan m.</div><div class="pc-linked-action">manage</div></div>
+          <div class="section-row" style="margin-bottom:10px;"><div class="section-title">upcoming</div></div>
+
+          <div class="plan-item">
+            <div class="plan-top"><div class="plan-date">sun, aug 16</div><div class="plan-status confirmed">confirmed</div></div>
+            <div class="plan-body"><div class="plan-role">camera 2</div><div class="plan-time">9:00a call time · 10:00a &amp; 11:45a services</div>
+              <div class="served-status"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>you're serving</div>
+            </div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-top"><div class="plan-date">sun, aug 23</div><div class="plan-status pending">needs response</div></div>
+            <div class="plan-body"><div class="plan-role">q-sys operator</div><div class="plan-time">8:30a call time · 10:00a &amp; 11:45a services</div>
+              <div class="plan-actions"><div class="plan-btn link">respond in planning center<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg></div></div>
+            </div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-top"><div class="plan-date">sun, aug 30</div><div class="plan-status confirmed">confirmed</div></div>
+            <div class="plan-body"><div class="plan-role">ekidz — check-in</div><div class="plan-time">9:15a call time · 10:00a service</div>
+              <div class="served-status"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>you're serving</div>
+            </div>
+          </div>
+
+          <div class="section-row" style="margin-top:6px; margin-bottom:10px;"><div class="section-title">team calendar</div></div>
+          <div class="cal-source-row"><div class="cal-source-dot"></div><div class="cal-source-text">synced with <b>google calendar</b> · production team</div></div>
+
+          <div class="cal-event"><div class="cal-datebox"><div class="mon">aug</div><div class="day">21</div></div><div class="cal-body"><div class="cal-title">team night — new volunteer orientation</div><div class="cal-meta">6:30p · media center</div></div><div class="cal-tag">event</div></div>
+          <div class="cal-event birthday"><div class="cal-datebox"><div class="mon">aug</div><div class="day">24</div></div><div class="cal-body"><div class="cal-title">mia torres' birthday</div><div class="cal-meta">audio team</div></div><div class="cal-tag">birthday</div></div>
+          <div class="cal-event" style="border-bottom:none;"><div class="cal-datebox"><div class="mon">sep</div><div class="day">05</div></div><div class="cal-body"><div class="cal-title">q-sys refresher training</div><div class="cal-meta">7:00p · booth</div></div><div class="cal-tag">event</div></div>
+        </div>
+      </div>
+
+      <!-- ============ TEAM ============ -->
+      <div class="screen" id="screen-team">
+        <div class="lib-head"><div class="lib-title">team</div><div class="grad-underline"></div></div>
+        <div class="team-grid">
+          <div class="team-card"><div class="team-avatar" style="background:#0a2b2a; color:var(--blue);">MT</div><div class="team-name">mia torres</div><div class="team-role">audio lead</div></div>
+          <div class="team-card"><div class="team-avatar" style="background:#0a2b1c; color:var(--green);">DK</div><div class="team-name">devon kim</div><div class="team-role">camera</div></div>
+          <div class="team-card"><div class="team-avatar" style="background:#2b0a29; color:var(--pink);">RS</div><div class="team-name">reese sang</div><div class="team-role">q-sys</div></div>
+          <div class="team-card"><div class="team-avatar" style="background:#0a2b2a; color:var(--blue);">JM</div><div class="team-name">jordan m.</div><div class="team-role">camera</div></div>
+          <div class="team-card"><div class="team-avatar" style="background:#0a2b1c; color:var(--green);">AL</div><div class="team-name">ari lu</div><div class="team-role">ekidz</div></div>
+          <div class="team-card"><div class="team-avatar" style="background:#2b0a29; color:var(--pink);">TB</div><div class="team-name">taylor b.</div><div class="team-role">lighting</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" data-tab="home" onclick="goTo('home')"><span class="tab-dot"></span>home</button>
+      <button class="tab" data-tab="library" onclick="goTo('library')">library</button>
+      <button class="tab" data-tab="schedule" onclick="goTo('schedule')">schedule</button>
+      <button class="tab" data-tab="team" onclick="goTo('team')">team</button>
+    </div>
+  </div>
+
+  <script>
+    var history = ['home'];
+
+    function goTo(name){
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-' + name).classList.add('active');
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
+      if(history[history.length - 1] !== name) history.push(name);
+      document.getElementById('screen-' + name).scrollTop = 0;
+    }
+
+    function openPlayer(){
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-player').classList.add('active');
+      history.push('player');
+    }
+
+    function goBack(){
+      history.pop();
+      var prev = history[history.length - 1] || 'home';
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-' + prev).classList.add('active');
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === prev); });
+    }
+
+    function showSchedState(state){
+      document.getElementById('sched-not-connected').style.display = state === 'not-connected' ? 'block' : 'none';
+      document.getElementById('sched-connected').style.display = state === 'connected' ? 'block' : 'none';
+      document.getElementById('btn-not-connected').classList.toggle('active', state === 'not-connected');
+      document.getElementById('btn-connected').classList.toggle('active', state === 'connected');
+    }
+  </script>
+
+</body>
+</html>
