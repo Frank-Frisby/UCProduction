@@ -139,6 +139,26 @@
   /* ---------- Player ---------- */
   .player-media{height:230px; position:relative; background:radial-gradient(circle at 25% 25%, rgba(0,255,252,.16), transparent 55%), radial-gradient(circle at 80% 75%, rgba(71,255,145,.14), transparent 50%), radial-gradient(circle at 60% 20%, rgba(253,178,255,.12), transparent 45%), #111; overflow:hidden;}
   .player-media iframe{width:100%; height:100%; border:none; display:block;}
+
+  /* ---------- Doc viewer ---------- */
+  .doc-header{
+    flex:0 0 auto;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .doc-back{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--surface-raised); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .doc-title-wrap{min-width:0; flex:1;}
+  .doc-eyebrow{font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:2px;}
+  .doc-title{font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .doc-frame-wrap{flex:1; min-height:0; background:#fff;}
+  .doc-frame-wrap iframe{width:100%; height:100%; border:none; display:block;}
+  #screen-doc{display:none; flex-direction:column; overflow:hidden; padding-bottom:0;}
+  #screen-doc.active{display:flex;}
   .player-back{position:absolute; top:16px; left:16px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center;}
   .player-playbtn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
   .player-playbtn span{width:56px; height:56px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center;}
@@ -284,6 +304,20 @@
         </div>
       </div>
 
+      <!-- ============ DOC VIEWER ============ -->
+      <div class="screen" id="screen-doc">
+        <div class="doc-header">
+          <button class="doc-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="doc-title-wrap">
+            <div class="doc-eyebrow" id="doc-eyebrow">document</div>
+            <div class="doc-title" id="doc-title">document title</div>
+          </div>
+        </div>
+        <div class="doc-frame-wrap">
+          <iframe id="doc-iframe" src="about:blank" title="document viewer"></iframe>
+        </div>
+      </div>
+
       <!-- ============ SCHEDULE ============ -->
       <div class="screen" id="screen-schedule">
         <div class="sched-head"><div class="sched-title">schedule</div></div>
@@ -405,7 +439,7 @@
       {id:'pro7-001', title:'ProPresenter 7 Training', department:'cgs', type:'video', url:'https://youtu.be/nDqHkxVotqU', duration:'58 min', added_by:'Franklin Frisby', description:'ProPresenter Training for Elevation Church University City.', featured:true},
       {id:'pro7-002', title:'ProPresenter 7 Training (doc)', department:'cgs', type:'doc', url:'https://docs.google.com/document/d/1UCAr8hafrAXaeKgEqng46H8Rl3J61fboZ8EN4WFKNgU/edit?tab=t.0#heading=h.jhpaxupv2f', page_count:'4 pages', added_by:'Franklin Frisby', published:false},
       {id:'reso-001', title:'Resolume Arena 7 Training', department:'cgs', type:'video', url:'https://youtu.be/PTSTQXEAttQ', duration:'41 min', added_by:'Franklin Frisby', featured:true},
-      {id:'reso-002', title:'Resolume Arena 7 Document', department:'cgs', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'reso-002', title:'Resolume Arena 7 Document', department:'cgs', type:'doc', url:'https://docs.google.com/document/d/e/2PACX-1vS_UVmrAdCrXn_OhcBuszPsX9CceqR4UZTovD_AoXQSzKRqCD4JB-uB3B6S4AWJ2Efwsoa_H_Px4-Yd/pub?embedded=true', page_count:'4 pages', added_by:'Franklin Frisby', published:true},
       {id:'vid-001', title:'Switcher Cheat Sheet', department:'video', type:'doc', url:null, page_count:'1 page', added_by:'Franklin Frisby', featured:true},
       {id:'vid-002', title:'Camera Training', department:'video', type:'doc', url:null, page_count:'21 pages', added_by:'Franklin Frisby', featured:true},
       {id:'vid-003', title:'Video Director Guide', department:'video', type:'doc', url:null, page_count:'3 pages', added_by:'Franklin Frisby'},
@@ -548,10 +582,22 @@
       var item = LIBRARY.filter(function(it){ return it.id === id; })[0];
       if(!item) return;
       if(item.type === 'doc' || item.type === 'sheet'){
+        if(item.published) { openDocFor(item); return; }
         if(item.url) window.open(item.url, '_blank');
         return;
       }
       openPlayerFor(item);
+    }
+
+    function openDocFor(item){
+      var dept = deptOf(item.department);
+      document.getElementById('doc-eyebrow').textContent = (dept ? dept.label : item.department) + ' · ' + (item.type === 'sheet' ? 'sheet' : 'doc');
+      document.getElementById('doc-title').textContent = item.title;
+      document.getElementById('doc-iframe').src = item.url;
+
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-doc').classList.add('active');
+      history.push('doc');
     }
 
     function openPlayerFor(item){
