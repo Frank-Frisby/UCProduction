@@ -110,6 +110,9 @@
   .list-title{font-size:12.5px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .list-meta{font-size:10.5px; color:var(--text-faint); font-weight:300;}
   .list-badge{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); flex:0 0 auto;}
+  .list-badge.needs-link{color:var(--pink); border:1px solid #4a2f47; padding:3px 7px; border-radius:999px;}
+  .list-item.inert{opacity:.55;}
+  .list-item.inert .list-icon{opacity:.7;}
 
   /* ---------- Tabbar ---------- */
   .tabbar{
@@ -134,7 +137,8 @@
   .filter-chip.active{background:var(--text); color:#000; border-color:var(--text);}
 
   /* ---------- Player ---------- */
-  .player-media{height:230px; position:relative; background:radial-gradient(circle at 25% 25%, rgba(0,255,252,.16), transparent 55%), radial-gradient(circle at 80% 75%, rgba(71,255,145,.14), transparent 50%), radial-gradient(circle at 60% 20%, rgba(253,178,255,.12), transparent 45%), #111;}
+  .player-media{height:230px; position:relative; background:radial-gradient(circle at 25% 25%, rgba(0,255,252,.16), transparent 55%), radial-gradient(circle at 80% 75%, rgba(71,255,145,.14), transparent 50%), radial-gradient(circle at 60% 20%, rgba(253,178,255,.12), transparent 45%), #111; overflow:hidden;}
+  .player-media iframe{width:100%; height:100%; border:none; display:block;}
   .player-back{position:absolute; top:16px; left:16px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center;}
   .player-playbtn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
   .player-playbtn span{width:56px; height:56px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center;}
@@ -242,48 +246,13 @@
         </div>
 
         <div class="section-row"><div class="section-title">continue training</div><div class="section-link">see all</div></div>
-        <div class="continue-scroll">
-          <button class="continue-card" onclick="openPlayer()">
-            <div class="continue-thumb"><div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div></div>
-            <div class="continue-body">
-              <div class="continue-tag">camera · video</div>
-              <div class="continue-name">framing a wide shot on the switcher</div>
-              <div class="progress-track"><div class="progress-fill" style="width:64%"></div></div>
-            </div>
-          </button>
-          <button class="continue-card" onclick="openPlayer()">
-            <div class="continue-thumb"><div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div></div>
-            <div class="continue-body">
-              <div class="continue-tag">audio · video</div>
-              <div class="continue-name">ringing out stage monitors</div>
-              <div class="progress-track"><div class="progress-fill" style="width:22%"></div></div>
-            </div>
-          </button>
-        </div>
+        <div class="continue-scroll" id="continue-scroll"></div>
 
         <div class="section-row"><div class="section-title">departments</div></div>
-        <div class="dept-grid">
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon blue"><i></i><i></i><i></i><i></i></span><span class="dept-count">18 items</span></div><div class="dept-name">camera</div></button>
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon green"><i></i><i></i><i></i><i></i></span><span class="dept-count">24 items</span></div><div class="dept-name">audio</div></button>
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon pink"><i></i><i></i><i></i><i></i></span><span class="dept-count">11 items</span></div><div class="dept-name">lighting</div></button>
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon mix"><i></i><i></i><i></i><i></i></span><span class="dept-count">9 items</span></div><div class="dept-name">q-sys</div></button>
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon blue"><i></i><i></i><i></i><i></i></span><span class="dept-count">13 items</span></div><div class="dept-name">ekidz</div></button>
-          <button class="dept-card" onclick="goTo('library')"><div class="dept-top"><span class="px-icon green"><i></i><i></i><i></i><i></i></span><span class="dept-count">7 items</span></div><div class="dept-name">general knowledge</div></button>
-        </div>
+        <div class="dept-grid" id="dept-grid"></div>
 
         <div class="section-row"><div class="section-title">recently added</div></div>
-        <button class="list-item" onclick="openPlayer()">
-          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
-          <div class="list-body"><div class="list-title">soundcheck flow — new team walkthrough</div><div class="list-meta">audio · 6 min · added yesterday</div></div>
-        </button>
-        <button class="list-item" onclick="goTo('library')">
-          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
-          <div class="list-body"><div class="list-title">stage plot &amp; input list — winter series</div><div class="list-meta">pdf · 2 pages · added mon</div></div>
-        </button>
-        <button class="list-item" style="border-bottom:none;" onclick="goTo('library')">
-          <div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div>
-          <div class="list-body"><div class="list-title">team night — camera crew, jan 26</div><div class="list-meta">photos · 32 images</div></div>
-        </button>
+        <div id="recently-added"></div>
       </div>
 
       <!-- ============ LIBRARY ============ -->
@@ -292,45 +261,26 @@
           <div class="lib-title">library</div>
           <div class="grad-underline"></div>
         </div>
-        <div class="filter-row">
-          <div class="filter-chip active">all</div>
-          <div class="filter-chip">videos</div>
-          <div class="filter-chip">docs</div>
-          <div class="filter-chip">photos</div>
-          <div class="filter-chip">camera</div>
-          <div class="filter-chip">audio</div>
-          <div class="filter-chip">q-sys</div>
-          <div class="filter-chip">ekidz</div>
-          <div class="filter-chip">general knowledge</div>
-        </div>
+        <div class="filter-row" id="filter-row"></div>
 
-        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">framing a wide shot on the switcher</div><div class="list-meta">camera · 9 min</div></div><div class="list-badge">64%</div></button>
-        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="list-body"><div class="list-title">stage plot &amp; input list — winter series</div><div class="list-meta">audio · doc · 2 pages</div></div><div class="list-badge">new</div></button>
-        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div><div class="list-body"><div class="list-title">team night — camera crew, jan 26</div><div class="list-meta">photos · 32 images</div></div><div class="list-badge"></div></button>
-        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">ringing out stage monitors</div><div class="list-meta">audio · 12 min</div></div><div class="list-badge">22%</div></button>
-        <button class="list-item"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00fffc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="list-body"><div class="list-title">lighting cue sheet template</div><div class="list-meta">lighting · doc · 1 page</div></div><div class="list-badge"></div></button>
-        <button class="list-item" onclick="openPlayer()"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#47ff91" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><div class="list-body"><div class="list-title">livestream checklist, start to finish</div><div class="list-meta">q-sys · 14 min</div></div><div class="list-badge"></div></button>
-        <button class="list-item" style="border-bottom:none;"><div class="list-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fdb2ff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></div><div class="list-body"><div class="list-title">behind the scenes — christmas eve</div><div class="list-meta">photos · 58 images</div></div><div class="list-badge"></div></button>
+        <div id="library-list"></div>
       </div>
 
       <!-- ============ PLAYER ============ -->
       <div class="screen" id="screen-player">
-        <div class="player-media">
+        <div class="player-media" id="player-media">
           <button class="player-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <div class="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>
+          <div class="player-playbtn" id="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>
         </div>
         <div class="player-body">
-          <div class="player-eyebrow">camera · training</div>
-          <div class="player-title">framing a wide shot on the switcher</div>
-          <div class="player-meta">9 min · added by mia torres · 340 crew have watched</div>
+          <div class="player-eyebrow" id="player-eyebrow">camera · training</div>
+          <div class="player-title" id="player-title">framing a wide shot on the switcher</div>
+          <div class="player-meta" id="player-meta">9 min · added by mia torres</div>
           <div class="scrub-track"><div class="scrub-fill"></div><div class="scrub-knob"></div></div>
           <div class="scrub-times"><span>3:24</span><span>9:02</span></div>
-          <div class="player-desc">a quick walkthrough of when to call the wide shot, how to frame it against the stage, and the handoff cues to listen for from the switcher.</div>
-          <div class="section-title" style="margin-bottom:6px;">chapters</div>
-          <div class="chapter-item"><div class="chapter-time">0:00</div><div class="chapter-name">why the wide shot matters</div></div>
-          <div class="chapter-item"><div class="chapter-time">2:10</div><div class="chapter-name">framing against the stage</div></div>
-          <div class="chapter-item"><div class="chapter-time">5:40</div><div class="chapter-name">listening for the call</div></div>
-          <div class="chapter-item" style="border-bottom:none;"><div class="chapter-time">7:55</div><div class="chapter-name">common mistakes</div></div>
+          <div class="player-desc" id="player-desc"></div>
+          <div class="section-title" id="chapters-title" style="margin-bottom:6px;">chapters</div>
+          <div id="chapters-list"></div>
         </div>
       </div>
 
@@ -438,6 +388,212 @@
       document.getElementById('btn-not-connected').classList.toggle('active', state === 'not-connected');
       document.getElementById('btn-connected').classList.toggle('active', state === 'connected');
     }
+
+    // ---------- real library data ----------
+    var DEPARTMENTS = [
+      {key:'camera', label:'camera', color:'blue'},
+      {key:'audio', label:'audio', color:'green'},
+      {key:'lighting', label:'lighting', color:'pink'},
+      {key:'qsys', label:'q-sys', color:'mix'},
+      {key:'ekidz', label:'ekidz', color:'blue'},
+      {key:'general', label:'general knowledge', color:'green'},
+      {key:'cgs', label:"cg's", color:'pink'},
+      {key:'video', label:'video', color:'mix'}
+    ];
+
+    var LIBRARY = [
+      {id:'pro7-001', title:'ProPresenter 7 Training', department:'cgs', type:'video', url:'https://youtu.be/nDqHkxVotqU', duration:'58 min', added_by:'Franklin Frisby', description:'ProPresenter Training for Elevation Church University City.', featured:true},
+      {id:'pro7-002', title:'ProPresenter 7 Training (doc)', department:'cgs', type:'doc', url:'https://docs.google.com/document/d/1UCAr8hafrAXaeKgEqng46H8Rl3J61fboZ8EN4WFKNgU/edit?tab=t.0#heading=h.jhpaxupv2f', page_count:'4 pages', added_by:'Franklin Frisby', published:false},
+      {id:'reso-001', title:'Resolume Arena 7 Training', department:'cgs', type:'video', url:'https://youtu.be/PTSTQXEAttQ', duration:'41 min', added_by:'Franklin Frisby', featured:true},
+      {id:'reso-002', title:'Resolume Arena 7 Document', department:'cgs', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'vid-001', title:'Switcher Cheat Sheet', department:'video', type:'doc', url:null, page_count:'1 page', added_by:'Franklin Frisby', featured:true},
+      {id:'vid-002', title:'Camera Training', department:'video', type:'doc', url:null, page_count:'21 pages', added_by:'Franklin Frisby', featured:true},
+      {id:'vid-003', title:'Video Director Guide', department:'video', type:'doc', url:null, page_count:'3 pages', added_by:'Franklin Frisby'},
+      {id:'gen-001', title:'Start Up Checklist', department:'general', type:'doc', url:null, page_count:'1 page', added_by:'Franklin Frisby'},
+      {id:'gen-002', title:'Shut Down Checklist', department:'general', type:'doc', url:'https://docs.google.com/document/d/1Q-BsEYCw2lEHma2oaWgSzJsUy7pqvRhA3U2YyduaLKs/edit?usp=drive_link', page_count:'1 page', added_by:'Franklin Frisby', published:false},
+      {id:'gen-003', title:'Understanding ^Link', department:'general', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'gen-004', title:'Understanding Doomsday', department:'general', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'gen-005', title:'Understanding ISO', department:'general', type:'doc', url:null, page_count:'2 pages', added_by:'Franklin Frisby'},
+      {id:'gen-006', title:'Understanding White Balance', department:'general', type:'doc', url:null, page_count:'3 pages', added_by:'Franklin Frisby'},
+      {id:'gen-007', title:'University City Comms', department:'general', type:'doc', url:null, page_count:'1 page', added_by:'Franklin Frisby'},
+      {id:'gen-008', title:'Troubleshooting: Reso Not Seeing Timecode', department:'general', type:'doc', url:null, page_count:'7 pages', added_by:'Franklin Frisby'},
+      {id:'gen-009', title:'Troubleshooting: Resolume MIDI Controller', department:'general', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'aud-001', title:'UCY Audio Patch Sheet', department:'audio', type:'doc', url:null, page_count:'1 page', added_by:'Franklin Frisby'},
+      {id:'gen-010', title:'Production Terminology', department:'general', type:'doc', url:null, page_count:'3 pages', added_by:'Franklin Frisby'},
+      {id:'gen-011', title:'How To: Transfer Files Using Cyberduck', department:'general', type:'doc', url:null, page_count:'4 pages', added_by:'Franklin Frisby'},
+      {id:'gen-012', title:'Support Requirements', department:'general', type:'doc', url:null, page_count:'2 pages', added_by:'Franklin Frisby'},
+      {id:'qsy-001', title:'eKidz Q-SYS Guide', department:'qsys', type:'doc', url:null, page_count:'7 pages', added_by:'Franklin Frisby'}
+    ];
+
+    var CHAPTERS = {}; // video_id -> [{timestamp, chapter_title}]  — none supplied yet
+
+    var currentFilter = 'all';
+
+    function deptOf(key){ return DEPARTMENTS.filter(function(d){ return d.key === key; })[0]; }
+
+    function youTubeId(url){
+      if(!url) return null;
+      var m = url.match(/(?:youtu\.be\/|v=)([A-Za-z0-9_-]{6,})/);
+      return m ? m[1] : null;
+    }
+
+    function iconSvg(type, color){
+      if(type === 'video'){
+        return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>';
+      }
+      if(type === 'photos'){
+        return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>';
+      }
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+    }
+
+    function metaFor(item){
+      var dept = deptOf(item.department);
+      var bits = [dept ? dept.label : item.department];
+      if(item.type === 'video') bits.push(item.duration || 'video');
+      else if(item.type === 'photos') bits.push(item.photo_count || 'photos');
+      else bits.push(item.page_count || 'doc');
+      return bits.join(' · ');
+    }
+
+    function isOpenable(item){
+      return item.type === 'video' ? !!youTubeId(item.url) : !!item.url;
+    }
+
+    function renderDeptGrid(){
+      var grid = document.getElementById('dept-grid');
+      grid.innerHTML = DEPARTMENTS.map(function(d){
+        var count = LIBRARY.filter(function(it){ return it.department === d.key; }).length;
+        return '<button class="dept-card" onclick="filterAndGoLibrary(\''+d.key+'\')">'
+          + '<div class="dept-top"><span class="px-icon '+d.color+'"><i></i><i></i><i></i><i></i></span><span class="dept-count">'+count+' item'+(count===1?'':'s')+'</span></div>'
+          + '<div class="dept-name">'+d.label+'</div></button>';
+      }).join('');
+    }
+
+    function renderFilterRow(){
+      var row = document.getElementById('filter-row');
+      var chips = [{key:'all', label:'all'}].concat(DEPARTMENTS.map(function(d){ return {key:d.key, label:d.label}; }));
+      row.innerHTML = chips.map(function(c){
+        return '<button class="filter-chip'+(c.key===currentFilter?' active':'')+'" onclick="setFilter(\''+c.key+'\')">'+c.label+'</button>';
+      }).join('');
+    }
+
+    function setFilter(key){
+      currentFilter = key;
+      renderFilterRow();
+      renderLibraryList();
+    }
+
+    function filterAndGoLibrary(deptKey){
+      currentFilter = deptKey;
+      goTo('library');
+      renderFilterRow();
+      renderLibraryList();
+    }
+
+    function libraryListItemHtml(item){
+      var dept = deptOf(item.department);
+      var color = dept ? ('var(--'+({blue:'blue',green:'green',pink:'pink',mix:'green'}[dept.color])+')') : '#8f8f8f';
+      var openable = isOpenable(item);
+      var badge = '';
+      if(item.type === 'video' && !item.url) badge = '<div class="list-badge needs-link">add link</div>';
+      else if(item.type !== 'video' && !item.url) badge = '<div class="list-badge needs-link">add link</div>';
+      else if(item.type === 'doc' && item.published === false) badge = '<div class="list-badge needs-link">publish link</div>';
+      var tag = openable ? 'button' : 'div';
+      var attrs = openable ? ' onclick="openItem(\''+item.id+'\')"' : '';
+      return '<'+tag+' class="list-item'+(openable?'':' inert')+'"'+attrs+'>'
+        + '<div class="list-icon">'+iconSvg(item.type, color)+'</div>'
+        + '<div class="list-body"><div class="list-title">'+item.title+'</div><div class="list-meta">'+metaFor(item)+'</div></div>'
+        + badge
+        + '</'+tag+'>';
+    }
+
+    function renderLibraryList(){
+      var list = document.getElementById('library-list');
+      var items = currentFilter === 'all' ? LIBRARY : LIBRARY.filter(function(it){ return it.department === currentFilter; });
+      list.innerHTML = items.map(libraryListItemHtml).join('') || '<div style="padding:20px; color:var(--text-faint); font-size:12px;">nothing here yet.</div>';
+    }
+
+    function renderContinueCarousel(){
+      var el = document.getElementById('continue-scroll');
+      var featured = LIBRARY.filter(function(it){ return it.featured && isOpenable(it); });
+      el.innerHTML = featured.map(function(item){
+        var dept = deptOf(item.department);
+        return '<button class="continue-card" onclick="openItem(\''+item.id+'\')">'
+          + '<div class="continue-thumb"><div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div></div>'
+          + '<div class="continue-body"><div class="continue-tag">'+(dept?dept.label:item.department)+' · '+item.type+'</div>'
+          + '<div class="continue-name">'+item.title+'</div>'
+          + '<div class="progress-track"><div class="progress-fill" style="width:0%"></div></div></div></button>';
+      }).join('');
+    }
+
+    function renderRecentlyAdded(){
+      var el = document.getElementById('recently-added');
+      var items = LIBRARY.slice(0, 3);
+      el.innerHTML = items.map(function(item, i){
+        var dept = deptOf(item.department);
+        var color = '#8f8f8f';
+        var openable = isOpenable(item);
+        var tag = openable ? 'button' : 'div';
+        var attrs = openable ? ' onclick="openItem(\''+item.id+'\')"' : '';
+        var last = i === items.length - 1 ? ' style="border-bottom:none;"' : '';
+        return '<'+tag+' class="list-item'+(openable?'':' inert')+'"'+attrs+last+'>'
+          + '<div class="list-icon">'+iconSvg(item.type, color)+'</div>'
+          + '<div class="list-body"><div class="list-title">'+item.title+'</div><div class="list-meta">'+metaFor(item)+'</div></div>'
+          + '</'+tag+'>';
+      }).join('');
+    }
+
+    function openItem(id){
+      var item = LIBRARY.filter(function(it){ return it.id === id; })[0];
+      if(!item) return;
+      if(item.type === 'doc' || item.type === 'sheet'){
+        if(item.url) window.open(item.url, '_blank');
+        return;
+      }
+      openPlayerFor(item);
+    }
+
+    function openPlayerFor(item){
+      var dept = deptOf(item.department);
+      document.getElementById('player-eyebrow').textContent = (dept?dept.label:item.department) + ' · training';
+      document.getElementById('player-title').textContent = item.title;
+      document.getElementById('player-meta').textContent = (item.duration || '') + (item.added_by ? ' · added by ' + item.added_by : '');
+      document.getElementById('player-desc').textContent = item.description || '';
+
+      var media = document.getElementById('player-media');
+      var ytId = youTubeId(item.url);
+      var backBtn = '<button class="player-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>';
+      if(ytId){
+        media.innerHTML = backBtn + '<iframe src="https://www.youtube.com/embed/'+ytId+'?rel=0" title="'+item.title+'" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+      } else {
+        media.innerHTML = backBtn + '<div class="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>';
+      }
+
+      var chapters = CHAPTERS[item.id] || [];
+      var chList = document.getElementById('chapters-list');
+      var chTitle = document.getElementById('chapters-title');
+      if(chapters.length){
+        chTitle.style.display = 'block';
+        chList.innerHTML = chapters.map(function(c, i){
+          var last = i === chapters.length - 1 ? ' style="border-bottom:none;"' : '';
+          return '<div class="chapter-item"'+last+'><div class="chapter-time">'+c.timestamp+'</div><div class="chapter-name">'+c.chapter_title+'</div></div>';
+        }).join('');
+      } else {
+        chTitle.style.display = 'none';
+        chList.innerHTML = '';
+      }
+
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-player').classList.add('active');
+      history.push('player');
+    }
+
+    renderDeptGrid();
+    renderContinueCarousel();
+    renderRecentlyAdded();
+    renderFilterRow();
+    renderLibraryList();
   </script>
 
 </body>
