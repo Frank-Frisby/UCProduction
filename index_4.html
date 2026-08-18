@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>production</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --surface:#0c0c0c;
+    --surface-raised:#161616;
+    --border:#252525;
+    --text:#ffffff;
+    --text-dim:#8f8f8f;
+    --text-faint:#5c5c5c;
+    --blue:#00fffc;
+    --green:#47ff91;
+    --pink:#fdb2ff;
+    --gradient: linear-gradient(90deg, var(--blue), var(--green), var(--pink));
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    background:#000;
+    font-family:'Manrope', sans-serif;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    height:100%;
+    overscroll-behavior:none;
+  }
+  body{display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
+
+  .app{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    padding-top:var(--safe-top);
+  }
+  .screens{flex:1; min-height:0; position:relative;}
+  .screen{
+    position:absolute; inset:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    display:none;
+    padding-bottom:24px;
+  }
+  .screen.active{display:block;}
+
+  /* ---------- shared ---------- */
+  .px-icon{display:inline-grid; grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); gap:2px; width:16px; height:16px; flex:0 0 auto;}
+  .px-icon i{display:block; border-radius:1px;}
+  .px-icon.blue i:nth-child(1){background:var(--blue);} .px-icon.blue i:nth-child(2){background:#0a0a0a;} .px-icon.blue i:nth-child(3){background:#0a0a0a;} .px-icon.blue i:nth-child(4){background:var(--blue);}
+  .px-icon.green i:nth-child(1){background:var(--green);} .px-icon.green i:nth-child(2){background:#0a0a0a;} .px-icon.green i:nth-child(3){background:#0a0a0a;} .px-icon.green i:nth-child(4){background:var(--green);}
+  .px-icon.pink i:nth-child(1){background:var(--pink);} .px-icon.pink i:nth-child(2){background:#0a0a0a;} .px-icon.pink i:nth-child(3){background:#0a0a0a;} .px-icon.pink i:nth-child(4){background:var(--pink);}
+  .px-icon.mix i:nth-child(1){background:var(--blue);} .px-icon.mix i:nth-child(2){background:var(--green);} .px-icon.mix i:nth-child(3){background:var(--pink);} .px-icon.mix i:nth-child(4){background:#3a3a3a;}
+
+  .wordmark{display:flex; align-items:center; gap:6px; font-weight:700; font-size:16px; text-transform:lowercase;}
+  .wordmark .px-icon{width:14px; height:14px;}
+
+  .section-row{display:flex; align-items:center; justify-content:space-between; padding:0 20px; margin-bottom:12px;}
+  .section-title{font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-dim);}
+  .section-link{font-size:11px; font-weight:600; color:var(--text); text-transform:lowercase; opacity:.8;}
+
+  button{border:none; background:none; font-family:inherit; color:inherit; text-align:left; cursor:pointer;}
+
+  /* ---------- Home ---------- */
+  .home-head{padding:6px 20px 18px;}
+  .greet-eyebrow{font-size:11px; color:var(--text-dim); text-transform:lowercase; margin-bottom:4px;}
+  .greet-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;}
+  .greet-row .greet-eyebrow{margin-bottom:0;}
+  .greet-edit{font-size:10px; font-weight:600; color:var(--text-faint); text-transform:lowercase; text-decoration:underline; text-underline-offset:2px;}
+
+  /* ---------- Onboarding ---------- */
+  #screen-onboarding{display:none;}
+  #screen-onboarding.active{display:block;}
+  .onboard-wrap{padding:28px 20px 40px;}
+  .onboard-title{font-size:22px; font-weight:800; text-transform:lowercase; margin:22px 0 6px; line-height:1.2;}
+  .onboard-sub{font-size:12px; font-weight:300; color:var(--text-dim); line-height:1.5; margin-bottom:28px; max-width:280px;}
+  .onboard-label{display:block; font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px;}
+  .onboard-optional{color:var(--text-faint); font-weight:400; text-transform:none; letter-spacing:0;}
+  .onboard-input{
+    width:100%; height:44px; border-radius:11px;
+    background:var(--surface-raised); border:1px solid var(--border);
+    color:var(--text); font-family:'Manrope', sans-serif; font-size:16px; font-weight:400;
+    padding:0 14px; margin-bottom:20px; outline:none;
+  }
+  .onboard-input::placeholder{color:var(--text-faint);}
+  .onboard-chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .onboard-chip{
+    padding:9px 14px; border-radius:999px;
+    font-size:11.5px; font-weight:600; text-transform:lowercase;
+    border:1px solid var(--border); color:var(--text-dim); background:transparent;
+  }
+  .onboard-chip.active{background:var(--text); color:#000; border-color:var(--text);}
+  .onboard-submit{
+    width:100%; padding:14px 0; border-radius:11px;
+    background:var(--text); color:#000; font-size:13px; font-weight:700;
+    text-align:center; margin-top:6px;
+  }
+  .onboard-skip{
+    display:block; text-align:center; margin-top:16px;
+    font-size:11px; font-weight:600; color:var(--text-faint); text-transform:lowercase;
+  }
+  .greet-title{font-size:24px; font-weight:800; text-transform:lowercase; line-height:1.15;}
+  .greet-sub{margin-top:8px; font-size:12.5px; font-weight:300; color:var(--text-dim); line-height:1.5; max-width:280px;}
+
+  .notes-source-row{margin:0 20px 12px; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:11px; background:var(--surface-raised); border:1px solid var(--border);}
+  .notes-source-dot{width:7px; height:7px; border-radius:50%; background:var(--pink); flex:0 0 auto;}
+  .notes-source-text{font-size:11px; font-weight:500; color:var(--text-dim); flex:1;}
+  .notes-source-text b{color:var(--text); font-weight:700;}
+  .notes-embed-wrap{
+    margin:0 20px 26px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    overflow:hidden;
+    height:560px;
+    background:#fff;
+  }
+  .notes-embed-wrap iframe{width:100%; height:100%; border:none; display:block;}
+
+  .search{margin:0 20px 22px; width:calc(100% - 40px); height:42px; border-radius:12px; background:var(--surface-raised); border:1px solid var(--border); display:flex; align-items:center; gap:10px; padding:0 14px; color:var(--text-faint); font-size:12.5px; font-weight:300;}
+
+  .continue-scroll{display:flex; gap:12px; overflow-x:auto; padding:0 20px 4px; margin-bottom:26px; scrollbar-width:none;}
+  .continue-scroll::-webkit-scrollbar{display:none;}
+  .continue-card{flex:0 0 auto; width:190px; border-radius:14px; background:var(--surface-raised); border:1px solid var(--border); overflow:hidden;}
+  .continue-thumb{height:96px; width:100%; position:relative; overflow:hidden; background:radial-gradient(circle at 30% 30%, rgba(0,255,252,.14), transparent 55%), radial-gradient(circle at 75% 70%, rgba(253,178,255,.12), transparent 55%), #141414;}
+  .thumb-img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 35%;}
+  .thumb-frame{position:absolute; top:0; left:0; width:900px; height:520px; transform:scale(0.24); transform-origin:0 0; border:none; pointer-events:none; background:#fff;}
+  .play-dot{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:1;}
+  .play-dot span{width:30px; height:30px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center;}
+  .continue-body{padding:10px 12px 12px;}
+  .continue-tag{font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:5px;}
+  .continue-name{font-size:12.5px; font-weight:600; line-height:1.3; margin-bottom:9px;}
+  .progress-track{height:3px; width:100%; border-radius:2px; background:#242424; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--gradient); border-radius:2px;}
+
+  .dept-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 26px;}
+  .dept-card{border-radius:14px; background:var(--surface-raised); border:1px solid var(--border); padding:14px; display:flex; flex-direction:column; gap:20px; width:100%;}
+  .dept-top{display:flex; align-items:center; justify-content:space-between;}
+  .dept-count{font-size:10px; color:var(--text-faint); font-weight:600;}
+  .dept-name{font-size:13px; font-weight:700; text-transform:lowercase;}
+
+  .list-item{display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border); width:100%;}
+  .list-icon{width:36px; height:36px; border-radius:9px; background:var(--surface-raised); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .list-body{flex:1; min-width:0; text-align:left;}
+  .list-title{font-size:12.5px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .list-meta{font-size:10.5px; color:var(--text-faint); font-weight:300;}
+  .list-badge{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); flex:0 0 auto;}
+  .list-badge.needs-link{color:var(--pink); border:1px solid #4a2f47; padding:3px 7px; border-radius:999px;}
+  .list-item.inert{opacity:.55;}
+  .list-item.inert .list-icon{opacity:.7;}
+
+  /* ---------- Tabbar ---------- */
+  .tabbar{
+    flex:0 0 auto;
+    display:flex;
+    border-top:1px solid var(--border);
+    background:#000;
+    padding:10px 8px calc(12px + var(--safe-bottom));
+  }
+  .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10px; font-weight:600; text-transform:lowercase; color:var(--text-faint);}
+  .tab.active{color:var(--text);}
+  .tab-dot{width:5px; height:5px; border-radius:50%; background:transparent;}
+  .tab.active .tab-dot{background:var(--green);}
+
+  /* ---------- Library ---------- */
+  .lib-head{padding:6px 20px 14px;}
+  .lib-title{font-size:22px; font-weight:800; text-transform:lowercase; margin-bottom:12px;}
+  .lib-search-wrap{
+    margin:0 20px 14px;
+    height:42px;
+    border-radius:12px;
+    background:var(--surface-raised);
+    border:1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+    padding:0 14px;
+  }
+  .lib-search-input{
+    flex:1; min-width:0;
+    background:transparent; border:none; outline:none;
+    color:var(--text);
+    font-family:'Manrope', sans-serif;
+    font-size:16px; font-weight:300;
+  }
+  .lib-search-input::placeholder{color:var(--text-faint);}
+  .grad-underline{height:2px; width:36px; background:var(--gradient); border-radius:2px; margin-bottom:14px;}
+  .filter-row{display:flex; gap:8px; overflow-x:auto; padding:0 20px 18px; scrollbar-width:none;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{flex:0 0 auto; padding:8px 14px; border-radius:999px; font-size:11.5px; font-weight:600; border:1px solid var(--border); color:var(--text-dim); text-transform:lowercase;}
+  .filter-chip.active{background:var(--text); color:#000; border-color:var(--text);}
+
+  /* ---------- Player ---------- */
+  .player-media{height:360px; position:relative; background:radial-gradient(circle at 25% 25%, rgba(0,255,252,.16), transparent 55%), radial-gradient(circle at 80% 75%, rgba(71,255,145,.14), transparent 50%), radial-gradient(circle at 60% 20%, rgba(253,178,255,.12), transparent 45%), #111; overflow:hidden;}
+  .player-media iframe{width:100%; height:100%; border:none; display:block;}
+
+  /* ---------- Doc viewer ---------- */
+  .doc-header{
+    flex:0 0 auto;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .doc-back{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--surface-raised); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .doc-title-wrap{min-width:0; flex:1;}
+  .doc-eyebrow{font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:2px;}
+  .doc-title{font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .doc-frame-wrap{flex:1; min-height:0; background:#fff;}
+  .doc-frame-wrap iframe{width:100%; height:100%; border:none; display:block;}
+  #screen-doc{display:none; flex-direction:column; overflow:hidden; padding-bottom:0;}
+  #screen-doc.active{display:flex;}
+  .player-back{position:absolute; top:16px; left:16px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center;}
+  .player-playbtn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+  .player-playbtn span{width:56px; height:56px; border-radius:50%; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center;}
+  .player-body{padding:20px 20px 0;}
+  .player-eyebrow{font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--green); margin-bottom:8px;}
+  .player-title{font-size:19px; font-weight:800; line-height:1.25; margin-bottom:10px;}
+  .player-meta{font-size:11.5px; color:var(--text-faint); font-weight:300; margin-bottom:18px;}
+  .scrub-track{height:3px; width:100%; border-radius:2px; background:#242424; margin-bottom:6px; position:relative;}
+  .scrub-fill{position:absolute; left:0; top:0; height:100%; width:38%; background:var(--gradient); border-radius:2px;}
+  .scrub-knob{position:absolute; left:38%; top:50%; transform:translate(-50%,-50%); width:10px; height:10px; border-radius:50%; background:#fff;}
+  .scrub-times{display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); margin-bottom:22px;}
+  .player-desc{font-size:12px; font-weight:300; color:var(--text-dim); line-height:1.6; margin-bottom:20px;}
+  .chapter-item{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);}
+  .chapter-time{font-size:10.5px; color:var(--text-faint); font-weight:600; width:34px;}
+  .chapter-name{font-size:12px; font-weight:500;}
+
+  /* ---------- Schedule ---------- */
+  .sched-head{padding:6px 20px 14px;}
+  .sched-title{font-size:22px; font-weight:800; text-transform:lowercase; margin-bottom:12px;}
+  .state-toggle{display:flex; gap:6px; padding:0 20px 18px;}
+  .state-btn{flex:1; padding:8px 0; text-align:center; border-radius:9px; border:1px solid var(--border); font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint);}
+  .state-btn.active{background:var(--surface-raised); color:var(--text); border-color:#3a3a3a;}
+
+  .connect-card{margin:10px 20px 0; border:1px solid var(--border); border-radius:16px; background:var(--surface-raised); padding:26px 20px 24px; text-align:center; display:flex; flex-direction:column; align-items:center;}
+  .pc-mark{width:44px; height:44px; border-radius:12px; background:#141414; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:16px;}
+  .connect-title{font-size:15px; font-weight:700; margin-bottom:8px;}
+  .connect-body{font-size:12px; font-weight:300; color:var(--text-dim); line-height:1.6; max-width:230px; margin-bottom:22px;}
+  .connect-btn{width:100%; padding:13px 0; border-radius:10px; background:var(--text); color:#000; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;}
+  .connect-fine{margin-top:14px; font-size:10px; color:var(--text-faint); font-weight:300; line-height:1.5;}
+
+  .pc-linked-row, .cal-source-row{margin:0 20px 16px; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:11px; background:var(--surface-raised); border:1px solid var(--border);}
+  .pc-linked-dot{width:7px; height:7px; border-radius:50%; background:var(--green); flex:0 0 auto;}
+  .cal-source-dot{width:7px; height:7px; border-radius:50%; background:var(--blue); flex:0 0 auto;}
+  .pc-linked-text, .cal-source-text{font-size:11px; font-weight:500; color:var(--text-dim); flex:1;}
+  .pc-linked-text b, .cal-source-text b{color:var(--text); font-weight:700;}
+  .pc-linked-action{font-size:10px; font-weight:700; color:var(--text-faint); text-transform:lowercase;}
+
+  .plan-item{margin:0 20px 12px; border:1px solid var(--border); border-radius:14px; background:var(--surface-raised); overflow:hidden;}
+  .plan-top{display:flex; align-items:center; justify-content:space-between; padding:12px 14px 0;}
+  .plan-date{font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint);}
+  .plan-status{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:999px;}
+  .plan-status.confirmed{color:#04140f; background:var(--green);}
+  .plan-status.pending{color:#000; background:var(--pink);}
+  .plan-body{padding:8px 14px 14px;}
+  .plan-role{font-size:14px; font-weight:700; margin-bottom:3px;}
+  .plan-time{font-size:11.5px; color:var(--text-dim); font-weight:300; margin-bottom:12px;}
+  .plan-actions{display:flex; gap:8px;}
+  .plan-btn{flex:1; text-align:center; padding:9px 0; border-radius:8px; font-size:11px; font-weight:700; text-transform:lowercase;}
+  .plan-btn.link{display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; border:1px solid var(--border); color:var(--text);}
+  .served-status{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--green);}
+
+  .cal-event{display:flex; align-items:center; gap:12px; padding:11px 20px; border-bottom:1px solid var(--border);}
+  .cal-datebox{width:40px; height:40px; border-radius:9px; background:var(--surface-raised); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; flex:0 0 auto;}
+  .cal-datebox .mon{font-size:8px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-faint);}
+  .cal-datebox .day{font-size:14px; font-weight:800; line-height:1.1;}
+  .cal-event.birthday .cal-datebox{border-color:#4a2f47;}
+  .cal-event.birthday .cal-datebox .day{color:var(--pink);}
+  .cal-body{flex:1; min-width:0;}
+  .cal-title{font-size:12.5px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cal-meta{font-size:10.5px; color:var(--text-faint); font-weight:300;}
+  .cal-tag{font-size:9px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 7px; border-radius:999px; flex:0 0 auto; color:var(--text-dim); border:1px solid var(--border);}
+  .cal-event.birthday .cal-tag{color:var(--pink); border-color:#4a2f47;}
+
+  /* ---------- sync banner ---------- */
+  .sync-banner{
+    margin:10px 20px 0;
+    padding:10px 12px;
+    border-radius:10px;
+    background:var(--surface-raised);
+    border:1px dashed #4a2f47;
+    font-size:10.5px; font-weight:600; color:var(--pink);
+    text-align:center;
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="app">
+    <div class="screens">
+
+      <!-- ============ ONBOARDING ============ -->
+      <div class="screen" id="screen-onboarding">
+        <div class="onboard-wrap">
+          <div class="wordmark"><span class="px-icon mix"><i></i><i></i><i></i><i></i></span>production</div>
+          <div class="onboard-title">let's get you set up</div>
+          <div class="onboard-sub">just for you — this stays on your device and isn't shared with your team lead.</div>
+
+          <label class="onboard-label">your name</label>
+          <input id="ob-name" class="onboard-input" type="text" placeholder="e.g. jordan martinez">
+
+          <label class="onboard-label">your role</label>
+          <div class="onboard-chip-row" id="ob-role"></div>
+
+          <label class="onboard-label">positions you can run</label>
+          <div class="onboard-chip-row" id="ob-positions"></div>
+
+          <label class="onboard-label">when do you usually serve? <span class="onboard-optional">(optional)</span></label>
+          <div class="onboard-chip-row" id="ob-cadence"></div>
+
+          <button class="onboard-submit" onclick="saveProfile()">let's go</button>
+          <button class="onboard-skip" onclick="skipOnboarding()">skip for now</button>
+        </div>
+      </div>
+
+      <!-- ============ HOME ============ -->
+      <div class="screen active" id="screen-home">
+        <div class="sync-banner" id="sync-banner">showing last saved content · live sync unavailable</div>
+        <div class="home-head">
+          <div class="wordmark"><span class="px-icon mix"><i></i><i></i><i></i><i></i></span>production</div>
+        </div>
+        <div class="home-head" style="padding-top:2px;">
+          <div class="greet-row">
+            <div class="greet-eyebrow" id="greet-eyebrow">morning</div>
+            <button class="greet-edit" onclick="openOnboarding()">edit profile</button>
+          </div>
+          <div class="greet-title">welcome to the<br>uc production app</div>
+          <div class="greet-sub">everything you need to serve — training, run sheets and the latest team photos, in one place.</div>
+        </div>
+
+        <div class="section-row"><div class="section-title">sunday notes</div></div>
+        <div class="notes-source-row">
+          <div class="notes-source-dot"></div>
+          <div class="notes-source-text">synced with <b>notion</b></div>
+        </div>
+        <div class="notes-embed-wrap">
+          <iframe src="https://large-marsupial-548.notion.site/ebd//3bd246b7fd23800a8b9bf7f543255eba" loading="lazy" title="sunday notes"></iframe>
+        </div>
+
+        <button class="search" onclick="goToSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c5c5c" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          search training, docs, photos
+        </button>
+
+        <div class="section-row"><div class="section-title">continue training</div><div class="section-link">see all</div></div>
+        <div class="continue-scroll" id="continue-scroll"></div>
+
+        <div class="section-row"><div class="section-title">departments</div></div>
+        <div class="dept-grid" id="dept-grid"></div>
+
+        <div class="section-row"><div class="section-title">recently added</div></div>
+        <div id="recently-added"></div>
+      </div>
+
+      <!-- ============ LIBRARY ============ -->
+      <div class="screen" id="screen-library">
+        <div class="lib-head">
+          <div class="lib-title">library</div>
+          <div class="grad-underline"></div>
+        </div>
+        <div class="lib-search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c5c5c" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="search-input" class="lib-search-input" type="text" placeholder="search training, docs, photos" oninput="setQuery(this.value)">
+        </div>
+        <div class="filter-row" id="filter-row"></div>
+
+        <div id="library-list"></div>
+      </div>
+
+      <!-- ============ PLAYER ============ -->
+      <div class="screen" id="screen-player">
+        <div class="player-media" id="player-media">
+          <button class="player-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="player-playbtn" id="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>
+        </div>
+        <div class="player-body">
+          <div class="player-eyebrow" id="player-eyebrow">camera · training</div>
+          <div class="player-title" id="player-title">framing a wide shot on the switcher</div>
+          <div class="player-meta" id="player-meta">9 min · added by mia torres</div>
+          <div class="scrub-track" id="scrub-track"><div class="scrub-fill" id="scrub-fill" style="width:0%;"></div><div class="scrub-knob" id="scrub-knob" style="left:0%;"></div></div>
+          <div class="scrub-times"><span id="scrub-current">0:00</span><span id="scrub-duration">0:00</span></div>
+          <div class="player-desc" id="player-desc"></div>
+          <div class="section-title" id="chapters-title" style="margin-bottom:6px;">chapters</div>
+          <div id="chapters-list"></div>
+        </div>
+      </div>
+
+      <!-- ============ DOC VIEWER ============ -->
+      <div class="screen" id="screen-doc">
+        <div class="doc-header">
+          <button class="doc-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="doc-title-wrap">
+            <div class="doc-eyebrow" id="doc-eyebrow">document</div>
+            <div class="doc-title" id="doc-title">document title</div>
+          </div>
+        </div>
+        <div class="doc-frame-wrap">
+          <iframe id="doc-iframe" src="about:blank" title="document viewer"></iframe>
+        </div>
+      </div>
+
+      <!-- ============ TEAM CALENDAR ============ -->
+      <div class="screen" id="screen-calendar">
+        <div class="sched-head"><div class="sched-title">team calendar</div></div>
+        <div class="cal-source-row"><div class="cal-source-dot"></div><div class="cal-source-text">synced with <b>google calendar</b> · production team</div></div>
+        <div class="sync-banner" id="cal-sync-banner" style="margin-left:20px; margin-right:20px;">showing sample events · live calendar unavailable</div>
+
+        <div id="cal-events-list"></div>
+      </div>
+
+    </div>
+
+    <div class="tabbar">
+      <button class="tab active" data-tab="home" onclick="goTo('home')"><span class="tab-dot"></span>home</button>
+      <button class="tab" data-tab="library" onclick="goTo('library')">library</button>
+      <button class="tab" data-tab="calendar" onclick="goTo('calendar')">team calendar</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script>
+    var navHistory = ['home'];
+
+    function goTo(name){
+      if(name !== 'player') destroyYtPlayer();
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-' + name).classList.add('active');
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
+      if(navHistory[navHistory.length - 1] !== name) navHistory.push(name);
+      document.getElementById('screen-' + name).scrollTop = 0;
+    }
+
+    function openPlayer(){
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-player').classList.add('active');
+      navHistory.push('player');
+    }
+
+    function goBack(){
+      navHistory.pop();
+      var prev = navHistory[navHistory.length - 1] || 'home';
+      if(prev !== 'player') destroyYtPlayer();
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-' + prev).classList.add('active');
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === prev); });
+    }
+
+    // ---------- real library data ----------
+    var DEPARTMENTS = [
+      {key:'camera', label:'camera', color:'blue'},
+      {key:'audio', label:'audio', color:'green'},
+      {key:'lighting', label:'lighting', color:'pink'},
+      {key:'qsys', label:'q-sys', color:'mix'},
+      {key:'ekidz', label:'ekidz', color:'blue'},
+      {key:'general', label:'general knowledge', color:'green'},
+      {key:'cgs', label:"cg's", color:'pink'},
+      {key:'video', label:'video', color:'mix'}
+    ];
+
+    // ---------- serving positions (onboarding "positions you can run") ----------
+    var POSITIONS = [
+      {key:'vpd', label:'Volunteer Production Director'},
+      {key:'ap', label:'Associate Producer (AP)'},
+      {key:'cg1', label:'CG1'},
+      {key:'cg2', label:'CG2'},
+      {key:'cg3', label:'CG3'},
+      {key:'switcher', label:'Switcher'},
+      {key:'video_director', label:'Video Director'},
+      {key:'cam1', label:'Cam 1'},
+      {key:'cam2', label:'Cam 2'},
+      {key:'cam3', label:'Cam 3'},
+      {key:'grip', label:'Grip'},
+      {key:'stage_hands', label:'Stage Hands'},
+      {key:'lighting_op', label:'Lighting Op'},
+      {key:'lighting_programmer', label:'Lighting Programmer'},
+      {key:'foh_assistant', label:'FOH Assistant'},
+      {key:'live_producer', label:'Live Producer'}
+    ];
+
+    // ---------- serving cadence (onboarding "when do you usually serve") ----------
+    var CADENCE_OPTIONS = [
+      {key:'sunday_a', label:'Sunday A Week'},
+      {key:'sunday_b', label:'Sunday B Week'},
+      {key:'thursday', label:'Thursday'}
+    ];
+
+    // ---------- role (onboarding "your role") ----------
+    var ROLE_OPTIONS = [
+      {key:'leader', label:'Leader'},
+      {key:'volunteer', label:'Volunteer'}
+    ];
+
+    var CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJZgmdF1J-7Gqvv1hJVvgTf-FVHnlnSa-2QDlGWQPihVNQfhTiD40vn9nWoOM5AwbSboM5aFX3n396/pub?gid=1857655650&single=true&output=csv";
+    var LIBRARY = [];
+    var FALLBACK_LIBRARY = [
+      {"id": "pro7-001", "title": "Propresenter 7 Training", "department": "cgs", "type": "video", "url": "https://youtu.be/nDqHkxVotqU", "duration": "58 min", "added_by": "Franklin Frisby", "description": "ProPresenter Training for Elevation Church University City", "featured": true},
+      {"id": "pro7-002", "title": "Propresenter 7 Training", "department": "cgs", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQgzaGJ4f8Q5W2BrRRHAcSSek7swVj_t2tZaFvZrSYcR2WAzNWwKw5oSC3Yy2M8kaC0EZ-IumZAe6EF/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "reso-001", "title": "Resolume Arena 7 Training", "department": "cgs", "type": "video", "url": "https://youtu.be/PTSTQXEAttQ", "duration": "41 min", "added_by": "Franklin Frisby", "featured": true},
+      {"id": "reso-002", "title": "Resolume Arena 7 Document", "department": "cgs", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vS_UVmrAdCrXn_OhcBuszPsX9CceqR4UZTovD_AoXQSzKRqCD4JB-uB3B6S4AWJ2Efwsoa_H_Px4-Yd/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "vid-001", "title": "Switcher Cheat Sheet", "department": "video", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQeFK_F-KRc1U9TZcDQO6x7USvShBZWJyRvaKCfYrJfVktc1XnaxVYKTf5zgGDcusoujNcDu-PRHEYp/pub?embedded=true", "page_count": "1 page", "added_by": "Franklin Frisby", "featured": true, "published": true},
+      {"id": "vid-002", "title": "Camera Training", "department": "video", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vSmAHSxk6ec0N8AGCZUJl8AvqeJLRyDZExL9p0tyaxlW0DoU3pwYzgYn2ZRDhye4435eFWNh3kzY02Q/pub?embedded=true", "page_count": "21 pages", "added_by": "Franklin Frisby", "featured": true, "published": true},
+      {"id": "vid-003", "title": "Video Director Guide", "department": "video", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vTRkBOeJOQJK3PhR1FLDOn3xn-n80o76gY8gbiWDlLaJdn6onGeoJd9_1a4byw1MpZ4TC187-G94O71/pub?embedded=true", "page_count": "3 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-001", "title": "Start Up Checklist", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQz3AfV74mGZNkxrmN-7Ml4HIzrDOKq87er8MlPIzDWz1-y_4sYrW8rLJBiENh1lH3JBYaiDGZdgk2-/pub?embedded=true", "page_count": "1 page", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-002", "title": "Shut Down Checklist", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vTMaFZbf2TBjmInALqaN3R2llZqCUZ6SSkVHX98oE7YR6zKDAKgt8ap4ADmSuGBdGysKdww_XtUcjBK/pub?embedded=true", "page_count": "1 page", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-003", "title": "Understanding ^Link", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vRbrorODwL4y9y4hkYtoVEbUHk4SMhtc4IbFITWdzKXCeUMxApfKZjt9Cw76rnxOXqIfEjZpknxqPJK/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-004", "title": "Understanding Doomsday", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vSWIS1uQYpGrGnq6K-JIcwyhAhSG8N41j0E0qTTPwE9aN0hlTPQ-I6c0j6bFElw1rIeV6soYoZMQayv/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-005", "title": "Understanding ISO", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQdD11kX31YVsS4nt5Y79Op1exkxsPzgsdnkFxg4nFjK45Xh5vM9XP83aWp2G4gR2ndOaC9D3zFOFuF/pub?embedded=true", "page_count": "2 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-006", "title": "Understanding White Balance", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vTyLwAtn1JKftHIbRhrqZDUqHL6PSJVQHz7-QTS1fEC-rIn_-frik_0-l43w8tawLLrgbyciSRCEoJR/pub?embedded=true", "page_count": "3 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-007", "title": "Understanding University City Coms", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vSNR4Trs9ioBPqafL-wWvxd20AXasC7MJnlzMb4IBPx4AJuclYazpFdoyrV2z_eQIxQUWQToAuZOqpa/pub?embedded=true", "page_count": "1 page", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-008", "title": "Troubleshooting Reso Not Seeing Timecode", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQVQ63R8fERyPvvZT-S_0IvevG7o-O912haOqe4apqGsAQFDXDUBBBqr6jLTNWA4Nmkkamd99amkiR1/pub?embedded=true", "page_count": "7 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-009", "title": "Troubleshooting Resolume Arean MIDI Controller", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vRilTYMmL_8D5h9qwtoEbjy6h1ZCa3YxbjnnNybkDj-98Js6LpNP27w5Q4DTLHD_su1qf65QU_GUpgP/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "aud-001", "title": "UCY Audio Patch Sheet", "department": "audio", "type": "sheet", "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSd_-XnegKYPJqUtEsUmmIWOfSTvSity8L5-88XeZm5SK-grpA5YB1eRWEZkD3oieZs5RDoCUNkrzCY/pubhtml?gid=1840066145&single=true&widget=true&headers=false", "page_count": "1 page", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-010", "title": "Production Terminology", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQ9JHOCr6EcziTFvIPDoyP8VW5O2ONzgcQPacfgwRs9Gr3dmAqJbBAk-bHtkGt18Q/pub?embedded=true", "page_count": "3 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-011", "title": "How To Transfer Files Using Cyberduck", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vQKVZMyZRBAifa8kErUV8CtIhT1BPX1mDle6rHi91NsN3CJtUTSs_Zdev-rYNq_Uyu19i_SHUYuoPRu/pub?embedded=true", "page_count": "4 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "gen-012", "title": "Support Requirements", "department": "general", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vToRpDwcrpnbIgcF0l6g6EBSTiKrxv5aEcTjL9iyjNHm7BfEzMO0CCB1GqpBF_RHymUrMWeIPkrIRAf/pub?embedded=true", "page_count": "2 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "qsy-001", "title": "eKidz Q-SYS Guide", "department": "qsys", "type": "doc", "url": "https://docs.google.com/document/d/e/2PACX-1vS9dHtfkW-7QQWA2bST1qzpsuy-nokYkUGZITSHAwILOJTbQ7jmqRnIrBC9Mb23cxLdpxJMuXfa9KbO/pub?embedded=true", "page_count": "7 pages", "added_by": "Franklin Frisby", "featured": false, "published": true},
+      {"id": "vid-004", "title": "DVE Keying", "department": "video", "type": "video", "url": "https://www.youtube.com/watch?v=QU0W8pNCzis", "duration": "10 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "vid-005", "title": "Luma Keying", "department": "video", "type": "video", "url": "https://youtu.be/lUzvL7CJ-ew?si=RQhRzLrlcCafzJij", "duration": "7 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "vid-006", "title": "Chroma Keying", "department": "video", "type": "video", "url": "https://youtu.be/Is_t37UBBjY?si=TCiMOWT0PAYqzq28", "duration": "13 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "vid-007", "title": "Keying & Compositing", "department": "video", "type": "video", "url": "https://youtu.be/_iAhSsrH8o8?si=d_0hwPCmgk_6p4ZZ", "duration": "10 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "lig-001", "title": "Lighitng Theory", "department": "lighting", "type": "video", "url": "https://youtu.be/ZcnkcM8LnsA?si=z_zMFXd1fbwsJQ2s", "duration": "54 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "reso-003", "title": "Resolume 101 - Flow", "department": "cgs", "type": "video", "url": "https://youtu.be/8X2Qt5BYEv0?si=ZfZGqjwjMhnwh_Ph", "duration": "5 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "pro7-003", "title": "How To Build A Song In ProPresenter", "department": "cgs", "type": "video", "url": "https://youtu.be/uIfjMXwPBYA?si=9TvMz7An1rnGNcv4", "duration": "25 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "gen-013", "title": "Signal Flow", "department": "general", "type": "video", "url": "https://www.youtube.com/live/7xV7BXbUhLo?si=-BCqrFbtWpj9exl6", "duration": "86 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "aud-002", "title": "Mic Basics", "department": "audio", "type": "video", "url": "https://www.youtube.com/live/0dtmwbehLMw?si=4YrSm6Plp_KsgQxN", "duration": "71 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "gen-014", "title": "Embedding/DeEmbedding", "department": "general", "type": "video", "url": "https://www.youtube.com/live/P3BjmVUIbi8?si=5q4nL8XwT5QHHWt0", "duration": "70 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "aud-003", "title": "Ableton Masterclass", "department": "audio", "type": "video", "url": "https://www.youtube.com/watch?v=b-nvfXSZ6tA&list=PLYaOg9Aenhv7_kYEyJ4YmsKsmia-sjtD1", "duration": "76 min", "added_by": "Franklin Frisby", "featured": false},
+      {"id": "gen-015", "title": "Over Under Cable Wrapping", "department": "general", "type": "video", "url": "https://www.youtube.com/watch?v=QwMJHMSmjVY", "duration": "2 min", "added_by": "Franklin Frisby", "featured": false},
+    ];
+
+    var CHAPTERS = {}; // video_id -> [{timestamp, chapter_title}]  — none supplied yet
+
+    var currentFilter = 'all';
+    var currentQuery = '';
+
+    function setQuery(val){
+      currentQuery = (val || '').trim().toLowerCase();
+      renderLibraryList();
+    }
+
+    function goToSearch(){
+      goTo('library');
+      var input = document.getElementById('search-input');
+      input.focus();
+    }
+
+    function deptOf(key){ return DEPARTMENTS.filter(function(d){ return d.key === key; })[0]; }
+
+    function youTubeId(url){
+      if(!url) return null;
+      var m = url.match(/(?:youtu\.be\/|v=)([A-Za-z0-9_-]{6,})/);
+      return m ? m[1] : null;
+    }
+
+    // ---------- YouTube player + live progress bar ----------
+    var ytPlayer = null;
+    var ytPollInterval = null;
+    var ytApiReady = false;
+    var pendingYtVideoId = null;
+
+    (function loadYouTubeApi(){
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    })();
+
+    function onYouTubeIframeAPIReady(){
+      ytApiReady = true;
+      if(pendingYtVideoId){
+        var v = pendingYtVideoId;
+        pendingYtVideoId = null;
+        createYtPlayer(v);
+      }
+    }
+
+    function formatPlayerTime(sec){
+      if(!isFinite(sec) || sec < 0) sec = 0;
+      var m = Math.floor(sec / 60);
+      var s = Math.floor(sec % 60);
+      return m + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function resetScrub(){
+      var fill = document.getElementById('scrub-fill');
+      var knob = document.getElementById('scrub-knob');
+      var cur = document.getElementById('scrub-current');
+      var dur = document.getElementById('scrub-duration');
+      if(fill) fill.style.width = '0%';
+      if(knob) knob.style.left = '0%';
+      if(cur) cur.textContent = '0:00';
+      if(dur) dur.textContent = '0:00';
+    }
+
+    function updateScrub(){
+      if(!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+      var cur = ytPlayer.getCurrentTime() || 0;
+      var dur = ytPlayer.getDuration() || 0;
+      var pct = dur > 0 ? Math.min(100, (cur / dur) * 100) : 0;
+      var fill = document.getElementById('scrub-fill');
+      var knob = document.getElementById('scrub-knob');
+      var curEl = document.getElementById('scrub-current');
+      var durEl = document.getElementById('scrub-duration');
+      if(fill) fill.style.width = pct + '%';
+      if(knob) knob.style.left = pct + '%';
+      if(curEl) curEl.textContent = formatPlayerTime(cur);
+      if(durEl) durEl.textContent = formatPlayerTime(dur);
+    }
+
+    function createYtPlayer(videoId){
+      destroyYtPlayer();
+      if(!ytApiReady || typeof YT === 'undefined' || !YT.Player){
+        pendingYtVideoId = videoId;
+        return;
+      }
+      ytPlayer = new YT.Player('yt-target', {
+        videoId: videoId,
+        playerVars: { rel: 0, playsinline: 1, modestbranding: 1 },
+        events: {
+          onReady: function(){ updateScrub(); },
+          onStateChange: function(e){
+            if(ytPollInterval){ clearInterval(ytPollInterval); ytPollInterval = null; }
+            if(e.data === YT.PlayerState.PLAYING){
+              ytPollInterval = setInterval(updateScrub, 250);
+            }
+            updateScrub();
+          }
+        }
+      });
+    }
+
+    function destroyYtPlayer(){
+      if(ytPollInterval){ clearInterval(ytPollInterval); ytPollInterval = null; }
+      if(ytPlayer && typeof ytPlayer.destroy === 'function'){
+        try{ ytPlayer.destroy(); }catch(e){}
+      }
+      ytPlayer = null;
+    }
+
+    function seekFromScrubEvent(e){
+      if(!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
+      var track = document.getElementById('scrub-track');
+      var rect = track.getBoundingClientRect();
+      var clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      var frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      var dur = ytPlayer.getDuration() || 0;
+      ytPlayer.seekTo(frac * dur, true);
+      updateScrub();
+    }
+
+    function iconSvg(type, color){
+      if(type === 'video'){
+        return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>';
+      }
+      if(type === 'photos'){
+        return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>';
+      }
+      return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+    }
+
+    function metaFor(item){
+      var dept = deptOf(item.department);
+      var bits = [dept ? dept.label : item.department];
+      if(item.type === 'video') bits.push(item.duration || 'video');
+      else if(item.type === 'photos') bits.push(item.photo_count || 'photos');
+      else if(item.type === 'sheet') bits.push(item.page_count || 'sheet');
+      else bits.push(item.page_count || 'doc');
+      return bits.join(' · ');
+    }
+
+    function isOpenable(item){
+      return item.type === 'video' ? !!youTubeId(item.url) : !!item.url;
+    }
+
+    function renderDeptGrid(){
+      var grid = document.getElementById('dept-grid');
+      grid.innerHTML = DEPARTMENTS.map(function(d){
+        var count = LIBRARY.filter(function(it){ return it.department === d.key; }).length;
+        return '<button class="dept-card" onclick="filterAndGoLibrary(\''+d.key+'\')">'
+          + '<div class="dept-top"><span class="px-icon '+d.color+'"><i></i><i></i><i></i><i></i></span><span class="dept-count">'+count+' item'+(count===1?'':'s')+'</span></div>'
+          + '<div class="dept-name">'+d.label+'</div></button>';
+      }).join('');
+    }
+
+    function renderFilterRow(){
+      var row = document.getElementById('filter-row');
+      var chips = [{key:'all', label:'all'}].concat(DEPARTMENTS.map(function(d){ return {key:d.key, label:d.label}; }));
+      row.innerHTML = chips.map(function(c){
+        return '<button class="filter-chip'+(c.key===currentFilter?' active':'')+'" onclick="setFilter(\''+c.key+'\')">'+c.label+'</button>';
+      }).join('');
+    }
+
+    function setFilter(key){
+      currentFilter = key;
+      renderFilterRow();
+      renderLibraryList();
+    }
+
+    function filterAndGoLibrary(deptKey){
+      currentFilter = deptKey;
+      goTo('library');
+      renderFilterRow();
+      renderLibraryList();
+    }
+
+    function libraryListItemHtml(item){
+      var dept = deptOf(item.department);
+      var color = dept ? ('var(--'+({blue:'blue',green:'green',pink:'pink',mix:'green'}[dept.color])+')') : '#8f8f8f';
+      var openable = isOpenable(item);
+      var badge = '';
+      if(item.type === 'video' && !item.url) badge = '<div class="list-badge needs-link">add link</div>';
+      else if(item.type !== 'video' && !item.url) badge = '<div class="list-badge needs-link">add link</div>';
+      else if((item.type === 'doc' || item.type === 'sheet') && item.published === false) badge = '<div class="list-badge needs-link">publish link</div>';
+      var tag = openable ? 'button' : 'div';
+      var attrs = openable ? ' onclick="openItem(\''+item.id+'\')"' : '';
+      return '<'+tag+' class="list-item'+(openable?'':' inert')+'"'+attrs+'>'
+        + '<div class="list-icon">'+iconSvg(item.type, color)+'</div>'
+        + '<div class="list-body"><div class="list-title">'+item.title+'</div><div class="list-meta">'+metaFor(item)+'</div></div>'
+        + badge
+        + '</'+tag+'>';
+    }
+
+    function renderLibraryList(){
+      var list = document.getElementById('library-list');
+      var items = currentFilter === 'all' ? LIBRARY : LIBRARY.filter(function(it){ return it.department === currentFilter; });
+      if(currentQuery){
+        items = items.filter(function(it){ return (it.title || '').toLowerCase().indexOf(currentQuery) !== -1; });
+      }
+      list.innerHTML = items.map(libraryListItemHtml).join('') || '<div style="padding:20px; color:var(--text-faint); font-size:12px;">nothing matches yet.</div>';
+    }
+
+    function continueThumbHtml(item){
+      var ytId = item.type === 'video' ? youTubeId(item.url) : null;
+      if(ytId){
+        return '<img class="thumb-img" src="https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg" alt="" loading="lazy">'
+          + '<div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>';
+      }
+      if((item.type === 'doc' || item.type === 'sheet') && item.url && item.published !== false){
+        return '<iframe class="thumb-frame" src="'+item.url+'" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>';
+      }
+      return '<div class="play-dot"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>';
+    }
+
+    function renderContinueCarousel(){
+      var el = document.getElementById('continue-scroll');
+      var featured = LIBRARY.filter(function(it){ return it.featured && isOpenable(it); });
+      el.innerHTML = featured.map(function(item){
+        var dept = deptOf(item.department);
+        return '<button class="continue-card" onclick="openItem(\''+item.id+'\')">'
+          + '<div class="continue-thumb">' + continueThumbHtml(item) + '</div>'
+          + '<div class="continue-body"><div class="continue-tag">'+(dept?dept.label:item.department)+' · '+item.type+'</div>'
+          + '<div class="continue-name">'+item.title+'</div>'
+          + '<div class="progress-track"><div class="progress-fill" style="width:0%"></div></div></div></button>';
+      }).join('');
+    }
+
+    function renderRecentlyAdded(){
+      var el = document.getElementById('recently-added');
+      var items = LIBRARY.slice(0, 3);
+      el.innerHTML = items.map(function(item, i){
+        var dept = deptOf(item.department);
+        var color = '#8f8f8f';
+        var openable = isOpenable(item);
+        var tag = openable ? 'button' : 'div';
+        var attrs = openable ? ' onclick="openItem(\''+item.id+'\')"' : '';
+        var last = i === items.length - 1 ? ' style="border-bottom:none;"' : '';
+        return '<'+tag+' class="list-item'+(openable?'':' inert')+'"'+attrs+last+'>'
+          + '<div class="list-icon">'+iconSvg(item.type, color)+'</div>'
+          + '<div class="list-body"><div class="list-title">'+item.title+'</div><div class="list-meta">'+metaFor(item)+'</div></div>'
+          + '</'+tag+'>';
+      }).join('');
+    }
+
+    function openItem(id){
+      var item = LIBRARY.filter(function(it){ return it.id === id; })[0];
+      if(!item) return;
+      if(item.type === 'doc' || item.type === 'sheet'){
+        if(item.published) { openDocFor(item); return; }
+        if(item.url) window.open(item.url, '_blank');
+        return;
+      }
+      if(item.type === 'photos'){
+        if(item.url) window.open(item.url, '_blank');
+        return;
+      }
+      openPlayerFor(item);
+    }
+
+    function openDocFor(item){
+      var dept = deptOf(item.department);
+      document.getElementById('doc-eyebrow').textContent = (dept ? dept.label : item.department) + ' · ' + (item.type === 'sheet' ? 'sheet' : 'doc');
+      document.getElementById('doc-title').textContent = item.title;
+      document.getElementById('doc-iframe').src = item.url;
+
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-doc').classList.add('active');
+      navHistory.push('doc');
+    }
+
+    function openPlayerFor(item){
+      var dept = deptOf(item.department);
+      document.getElementById('player-eyebrow').textContent = (dept?dept.label:item.department) + ' · training';
+      document.getElementById('player-title').textContent = item.title;
+      document.getElementById('player-meta').textContent = (item.duration || '') + (item.added_by ? ' · added by ' + item.added_by : '');
+      document.getElementById('player-desc').textContent = item.description || '';
+
+      var media = document.getElementById('player-media');
+      var ytId = youTubeId(item.url);
+      var backBtn = '<button class="player-back" onclick="goBack()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>';
+      resetScrub();
+      if(ytId){
+        media.innerHTML = backBtn + '<div id="yt-target" style="width:100%; height:100%;"></div>';
+        createYtPlayer(ytId);
+      } else {
+        destroyYtPlayer();
+        media.innerHTML = backBtn + '<div class="player-playbtn"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span></div>';
+      }
+
+      var chapters = CHAPTERS[item.id] || [];
+      var chList = document.getElementById('chapters-list');
+      var chTitle = document.getElementById('chapters-title');
+      if(chapters.length){
+        chTitle.style.display = 'block';
+        chList.innerHTML = chapters.map(function(c, i){
+          var last = i === chapters.length - 1 ? ' style="border-bottom:none;"' : '';
+          return '<div class="chapter-item"'+last+'><div class="chapter-time">'+c.timestamp+'</div><div class="chapter-name">'+c.chapter_title+'</div></div>';
+        }).join('');
+      } else {
+        chTitle.style.display = 'none';
+        chList.innerHTML = '';
+      }
+
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-player').classList.add('active');
+      navHistory.push('player');
+    }
+
+    var DEPT_ALIAS = {
+      "cg's": "cgs", "cgs": "cgs",
+      "video": "video",
+      "general knowledge": "general", "general": "general",
+      "audio": "audio",
+      "q-sys": "qsys", "qsys": "qsys",
+      "lighting": "lighting",
+      "camera": "camera",
+      "ekidz": "ekidz"
+    };
+
+    function extractUrl(raw){
+      raw = (raw || '').trim();
+      var m = raw.match(/src="([^"]+)"/);
+      if(m) return m[1].replace(/&amp;/g, '&');
+      return raw || null;
+    }
+
+    function normalizeRow(r){
+      var deptRaw = (r.department || '').trim().toLowerCase();
+      var dept = DEPT_ALIAS[deptRaw] || deptRaw.replace(/\s+/g, '_');
+      var type = (r.type || '').trim().toLowerCase();
+      var urlField = (r.url || '').trim();
+      var isIframe = urlField.indexOf('<iframe') === 0;
+      var url = extractUrl(urlField);
+      if(type === 'doc' && url && url.indexOf('/spreadsheets/') !== -1) type = 'sheet';
+      var published = null;
+      if(type === 'doc' || type === 'sheet'){
+        published = isIframe ? true : false;
+        if(url && url.indexOf('/edit') !== -1) published = false;
+      }
+      return {
+        id: (r.id || '').trim(),
+        title: (r.title || '').trim(),
+        department: dept,
+        type: type,
+        url: url,
+        duration: (r.duration || '').trim() || undefined,
+        page_count: (r.page_count || '').trim() || undefined,
+        photo_count: (r.photo_count || '').trim() || undefined,
+        added_by: (r.added_by || '').trim() || undefined,
+        description: (r.description || '').trim() || undefined,
+        featured: (r.featured || '').trim().toLowerCase() === 'yes',
+        published: published
+      };
+    }
+
+    function renderAll(){
+      renderDeptGrid();
+      renderContinueCarousel();
+      renderRecentlyAdded();
+      renderFilterRow();
+      renderLibraryList();
+    }
+
+    function useFallback(){
+      LIBRARY = FALLBACK_LIBRARY;
+      document.getElementById('sync-banner').style.display = 'block';
+      renderAll();
+    }
+
+    function loadLibrary(){
+      if(typeof Papa === 'undefined'){ useFallback(); return; }
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results){
+          try{
+            var rows = (results.data || []).filter(function(r){ return r.id && r.id.trim(); });
+            var mapped = rows.map(normalizeRow);
+            if(mapped.length){
+              LIBRARY = mapped;
+              document.getElementById('sync-banner').style.display = 'none';
+            } else {
+              useFallback();
+              return;
+            }
+          } catch(e){
+            useFallback();
+            return;
+          }
+          renderAll();
+        },
+        error: function(){ useFallback(); }
+      });
+    }
+
+    loadLibrary();
+
+    // ---------- Google Calendar ----------
+    var CALENDAR_API_KEY = "AIzaSyAF4u87dqypzwunKe8hsKpX5NNZqKMS6zk";
+    var CALENDAR_ID = "c_5004b995ff43c43ae535354ba7a3b6e5fd7c2606dbcfc82f05db8ccd00389d42@group.calendar.google.com";
+    var MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+    var FALLBACK_EVENTS_HTML =
+      '<div class="cal-event"><div class="cal-datebox"><div class="mon">aug</div><div class="day">21</div></div><div class="cal-body"><div class="cal-title">team night — new volunteer orientation</div><div class="cal-meta">6:30p · media center</div></div><div class="cal-tag">event</div></div>'
+      + '<div class="cal-event birthday"><div class="cal-datebox"><div class="mon">aug</div><div class="day">24</div></div><div class="cal-body"><div class="cal-title">mia torres\' birthday</div><div class="cal-meta">audio team</div></div><div class="cal-tag">birthday</div></div>'
+      + '<div class="cal-event" style="border-bottom:none;"><div class="cal-datebox"><div class="mon">sep</div><div class="day">05</div></div><div class="cal-body"><div class="cal-title">q-sys refresher training</div><div class="cal-meta">7:00p · booth</div></div><div class="cal-tag">event</div></div>';
+
+    function fmtEventDate(ev){
+      if(ev.start.date){
+        var parts = ev.start.date.split('-').map(Number);
+        return { mon: MONTHS[parts[1]-1], day: String(parts[2]).padStart(2, '0') };
+      } else if(ev.start.dateTime){
+        var d = new Date(ev.start.dateTime);
+        return { mon: MONTHS[d.getMonth()], day: String(d.getDate()).padStart(2, '0') };
+      }
+      return { mon: '', day: '' };
+    }
+
+    function fmtEventTime(dateTimeStr){
+      var d = new Date(dateTimeStr);
+      var h = d.getHours(), m = d.getMinutes();
+      var ampm = h >= 12 ? 'p' : 'a';
+      h = h % 12; if(h === 0) h = 12;
+      var mm = m < 10 ? '0' + m : '' + m;
+      return (m === 0 ? h : h + ':' + mm) + ampm;
+    }
+
+    function calEventHtml(ev, isLast){
+      var title = ev.summary || 'untitled event';
+      var isBirthday = /birthday/i.test(title);
+      var date = fmtEventDate(ev);
+      var meta = ev.start.dateTime
+        ? fmtEventTime(ev.start.dateTime) + (ev.location ? ' · ' + ev.location : '')
+        : (ev.location || 'all day');
+      var last = isLast ? ' style="border-bottom:none;"' : '';
+      return '<div class="cal-event' + (isBirthday ? ' birthday' : '') + '"' + last + '>'
+        + '<div class="cal-datebox"><div class="mon">' + date.mon + '</div><div class="day">' + date.day + '</div></div>'
+        + '<div class="cal-body"><div class="cal-title">' + title + '</div><div class="cal-meta">' + meta + '</div></div>'
+        + '<div class="cal-tag">' + (isBirthday ? 'birthday' : 'event') + '</div>'
+        + '</div>';
+    }
+
+    function useCalendarFallback(){
+      document.getElementById('cal-events-list').innerHTML = FALLBACK_EVENTS_HTML;
+      document.getElementById('cal-sync-banner').style.display = 'block';
+    }
+
+    function loadCalendar(){
+      var url = 'https://www.googleapis.com/calendar/v3/calendars/'
+        + encodeURIComponent(CALENDAR_ID)
+        + '/events?key=' + CALENDAR_API_KEY
+        + '&timeMin=' + encodeURIComponent(new Date().toISOString())
+        + '&maxResults=8&singleEvents=true&orderBy=startTime';
+
+      fetch(url)
+        .then(function(res){ if(!res.ok) throw new Error('calendar fetch failed'); return res.json(); })
+        .then(function(data){
+          var events = data.items || [];
+          if(!events.length){ useCalendarFallback(); return; }
+          document.getElementById('cal-events-list').innerHTML = events.map(function(ev, i){
+            return calEventHtml(ev, i === events.length - 1);
+          }).join('');
+          document.getElementById('cal-sync-banner').style.display = 'none';
+        })
+        .catch(function(){ useCalendarFallback(); });
+    }
+
+    loadCalendar();
+
+    // ---------- Volunteer profile (local only, never sent anywhere) ----------
+    var PROFILE_KEY = 'ucProductionProfile';
+    var selectedPositions = [];
+    var selectedCadence = [];
+    var selectedRole = null;
+
+    function greetingPrefix(){
+      var h = new Date().getHours();
+      if(h < 12) return 'morning';
+      if(h < 18) return 'afternoon';
+      return 'evening';
+    }
+
+    function applyProfile(profile){
+      var eyebrow = document.getElementById('greet-eyebrow');
+      if(!profile || !profile.name){
+        eyebrow.textContent = greetingPrefix();
+        return;
+      }
+      var firstName = profile.name.trim().split(/\s+/)[0];
+      eyebrow.textContent = greetingPrefix() + ', ' + firstName.toLowerCase();
+    }
+
+    function loadProfile(){
+      var raw = null;
+      try { raw = localStorage.getItem(PROFILE_KEY); } catch(e){}
+      if(!raw) return null;
+      try { return JSON.parse(raw); } catch(e){ return null; }
+    }
+
+    function renderPositionChips(preselected){
+      var wrap = document.getElementById('ob-positions');
+      wrap.innerHTML = POSITIONS.map(function(p){
+        return '<button type="button" class="onboard-chip" data-key="' + p.key + '" onclick="togglePosition(\'' + p.key + '\')">' + p.label + '</button>';
+      }).join('');
+      selectedPositions = (preselected || []).slice();
+      selectedPositions.forEach(function(key){
+        var btn = wrap.querySelector('.onboard-chip[data-key="' + key + '"]');
+        if(btn) btn.classList.add('active');
+      });
+    }
+
+    function togglePosition(key){
+      var idx = selectedPositions.indexOf(key);
+      if(idx === -1) selectedPositions.push(key); else selectedPositions.splice(idx, 1);
+      var btn = document.querySelector('#ob-positions .onboard-chip[data-key="' + key + '"]');
+      if(btn) btn.classList.toggle('active');
+    }
+
+    function renderRoleChips(preselected){
+      var wrap = document.getElementById('ob-role');
+      wrap.innerHTML = ROLE_OPTIONS.map(function(r){
+        return '<button type="button" class="onboard-chip" data-key="' + r.key + '" onclick="selectRole(\'' + r.key + '\')">' + r.label + '</button>';
+      }).join('');
+      var isValid = ROLE_OPTIONS.some(function(r){ return r.key === preselected; });
+      selectedRole = isValid ? preselected : null;
+      if(selectedRole){
+        var btn = wrap.querySelector('.onboard-chip[data-key="' + selectedRole + '"]');
+        if(btn) btn.classList.add('active');
+      }
+    }
+
+    function selectRole(key){
+      selectedRole = key;
+      document.querySelectorAll('#ob-role .onboard-chip').forEach(function(btn){
+        btn.classList.toggle('active', btn.dataset.key === key);
+      });
+    }
+
+    function renderCadenceChips(preselected){
+      var wrap = document.getElementById('ob-cadence');
+      wrap.innerHTML = CADENCE_OPTIONS.map(function(c){
+        return '<button type="button" class="onboard-chip" data-key="' + c.key + '" onclick="toggleCadence(\'' + c.key + '\')">' + c.label + '</button>';
+      }).join('');
+      selectedCadence = (Array.isArray(preselected) ? preselected : []).slice();
+      selectedCadence.forEach(function(key){
+        var btn = wrap.querySelector('.onboard-chip[data-key="' + key + '"]');
+        if(btn) btn.classList.add('active');
+      });
+    }
+
+    function toggleCadence(key){
+      var idx = selectedCadence.indexOf(key);
+      if(idx === -1) selectedCadence.push(key); else selectedCadence.splice(idx, 1);
+      var btn = document.querySelector('#ob-cadence .onboard-chip[data-key="' + key + '"]');
+      if(btn) btn.classList.toggle('active');
+    }
+
+    function openOnboarding(){
+      var existing = loadProfile();
+      document.getElementById('ob-name').value = existing ? existing.name || '' : '';
+      renderRoleChips(existing ? existing.role : null);
+      renderPositionChips(existing ? existing.positions : []);
+      renderCadenceChips(existing ? existing.cadence : []);
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-onboarding').classList.add('active');
+      document.querySelector('.tabbar').style.display = 'none';
+    }
+
+    function closeOnboarding(){
+      document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+      document.getElementById('screen-home').classList.add('active');
+      document.querySelector('.tabbar').style.display = 'flex';
+    }
+
+    function saveProfile(){
+      var name = document.getElementById('ob-name').value.trim();
+      if(!name){ document.getElementById('ob-name').focus(); return; }
+      var profile = {
+        name: name,
+        role: selectedRole || '',
+        positions: selectedPositions.slice(),
+        cadence: selectedCadence.slice()
+      };
+      try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch(e){}
+      applyProfile(profile);
+      closeOnboarding();
+    }
+
+    function skipOnboarding(){
+      applyProfile(null);
+      closeOnboarding();
+    }
+
+    (function initProfile(){
+      var existing = loadProfile();
+      if(existing){
+        applyProfile(existing);
+      } else {
+        applyProfile(null);
+        openOnboarding();
+      }
+    })();
+
+    (function initScrubSeek(){
+      var track = document.getElementById('scrub-track');
+      if(!track) return;
+      track.addEventListener('click', seekFromScrubEvent);
+    })();
+  </script>
+
+</body>
+</html>
