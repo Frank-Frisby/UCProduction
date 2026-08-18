@@ -375,10 +375,9 @@
 
           <div class="section-row" style="margin-top:6px; margin-bottom:10px;"><div class="section-title">team calendar</div></div>
           <div class="cal-source-row"><div class="cal-source-dot"></div><div class="cal-source-text">synced with <b>google calendar</b> · production team</div></div>
+          <div class="sync-banner" id="cal-sync-banner" style="margin-left:20px; margin-right:20px;">showing sample events · live calendar unavailable</div>
 
-          <div class="cal-event"><div class="cal-datebox"><div class="mon">aug</div><div class="day">21</div></div><div class="cal-body"><div class="cal-title">team night — new volunteer orientation</div><div class="cal-meta">6:30p · media center</div></div><div class="cal-tag">event</div></div>
-          <div class="cal-event birthday"><div class="cal-datebox"><div class="mon">aug</div><div class="day">24</div></div><div class="cal-body"><div class="cal-title">mia torres' birthday</div><div class="cal-meta">audio team</div></div><div class="cal-tag">birthday</div></div>
-          <div class="cal-event" style="border-bottom:none;"><div class="cal-datebox"><div class="mon">sep</div><div class="day">05</div></div><div class="cal-body"><div class="cal-title">q-sys refresher training</div><div class="cal-meta">7:00p · booth</div></div><div class="cal-tag">event</div></div>
+          <div id="cal-events-list"></div>
         </div>
       </div>
 
@@ -754,6 +753,78 @@
     }
 
     loadLibrary();
+
+    // ---------- Google Calendar ----------
+    var CALENDAR_API_KEY = "AIzaSyAF4u87dqypzwunKe8hsKpX5NNZqKMS6zk";
+    var CALENDAR_ID = "c_5004b995ff43c43ae535354ba7a3b6e5fd7c2606dbcfc82f05db8ccd00389d42@group.calendar.google.com";
+    var MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+    var FALLBACK_EVENTS_HTML =
+      '<div class="cal-event"><div class="cal-datebox"><div class="mon">aug</div><div class="day">21</div></div><div class="cal-body"><div class="cal-title">team night — new volunteer orientation</div><div class="cal-meta">6:30p · media center</div></div><div class="cal-tag">event</div></div>'
+      + '<div class="cal-event birthday"><div class="cal-datebox"><div class="mon">aug</div><div class="day">24</div></div><div class="cal-body"><div class="cal-title">mia torres\' birthday</div><div class="cal-meta">audio team</div></div><div class="cal-tag">birthday</div></div>'
+      + '<div class="cal-event" style="border-bottom:none;"><div class="cal-datebox"><div class="mon">sep</div><div class="day">05</div></div><div class="cal-body"><div class="cal-title">q-sys refresher training</div><div class="cal-meta">7:00p · booth</div></div><div class="cal-tag">event</div></div>';
+
+    function fmtEventDate(ev){
+      if(ev.start.date){
+        var parts = ev.start.date.split('-').map(Number);
+        return { mon: MONTHS[parts[1]-1], day: String(parts[2]).padStart(2, '0') };
+      } else if(ev.start.dateTime){
+        var d = new Date(ev.start.dateTime);
+        return { mon: MONTHS[d.getMonth()], day: String(d.getDate()).padStart(2, '0') };
+      }
+      return { mon: '', day: '' };
+    }
+
+    function fmtEventTime(dateTimeStr){
+      var d = new Date(dateTimeStr);
+      var h = d.getHours(), m = d.getMinutes();
+      var ampm = h >= 12 ? 'p' : 'a';
+      h = h % 12; if(h === 0) h = 12;
+      var mm = m < 10 ? '0' + m : '' + m;
+      return (m === 0 ? h : h + ':' + mm) + ampm;
+    }
+
+    function calEventHtml(ev, isLast){
+      var title = ev.summary || 'untitled event';
+      var isBirthday = /birthday/i.test(title);
+      var date = fmtEventDate(ev);
+      var meta = ev.start.dateTime
+        ? fmtEventTime(ev.start.dateTime) + (ev.location ? ' · ' + ev.location : '')
+        : (ev.location || 'all day');
+      var last = isLast ? ' style="border-bottom:none;"' : '';
+      return '<div class="cal-event' + (isBirthday ? ' birthday' : '') + '"' + last + '>'
+        + '<div class="cal-datebox"><div class="mon">' + date.mon + '</div><div class="day">' + date.day + '</div></div>'
+        + '<div class="cal-body"><div class="cal-title">' + title + '</div><div class="cal-meta">' + meta + '</div></div>'
+        + '<div class="cal-tag">' + (isBirthday ? 'birthday' : 'event') + '</div>'
+        + '</div>';
+    }
+
+    function useCalendarFallback(){
+      document.getElementById('cal-events-list').innerHTML = FALLBACK_EVENTS_HTML;
+      document.getElementById('cal-sync-banner').style.display = 'block';
+    }
+
+    function loadCalendar(){
+      var url = 'https://www.googleapis.com/calendar/v3/calendars/'
+        + encodeURIComponent(CALENDAR_ID)
+        + '/events?key=' + CALENDAR_API_KEY
+        + '&timeMin=' + encodeURIComponent(new Date().toISOString())
+        + '&maxResults=8&singleEvents=true&orderBy=startTime';
+
+      fetch(url)
+        .then(function(res){ if(!res.ok) throw new Error('calendar fetch failed'); return res.json(); })
+        .then(function(data){
+          var events = data.items || [];
+          if(!events.length){ useCalendarFallback(); return; }
+          document.getElementById('cal-events-list').innerHTML = events.map(function(ev, i){
+            return calEventHtml(ev, i === events.length - 1);
+          }).join('');
+          document.getElementById('cal-sync-banner').style.display = 'none';
+        })
+        .catch(function(){ useCalendarFallback(); });
+    }
+
+    loadCalendar();
   </script>
 
 </body>
