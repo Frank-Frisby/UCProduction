@@ -36,20 +36,12 @@
   }
   body{display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
 
-  .statusbar{
-    flex:0 0 auto;
-    padding-top:calc(var(--safe-top) + 6px);
-    height:calc(30px + var(--safe-top));
-    display:flex; align-items:flex-end; justify-content:space-between;
-    padding-left:20px; padding-right:20px; padding-bottom:6px;
-    font-size:12px; font-weight:600;
-  }
-
   .app{
     flex:1;
     min-height:0;
     display:flex;
     flex-direction:column;
+    padding-top:var(--safe-top);
   }
   .screens{flex:1; min-height:0; position:relative;}
   .screen{
@@ -258,8 +250,6 @@
 </head>
 <body>
 
-  <div class="statusbar"><span>9:41</span><span>●●●●</span></div>
-
   <div class="app">
     <div class="screens">
 
@@ -417,25 +407,25 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script>
-    var history = ['home'];
+    var navHistory = ['home'];
 
     function goTo(name){
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
       document.getElementById('screen-' + name).classList.add('active');
       document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
-      if(history[history.length - 1] !== name) history.push(name);
+      if(navHistory[navHistory.length - 1] !== name) navHistory.push(name);
       document.getElementById('screen-' + name).scrollTop = 0;
     }
 
     function openPlayer(){
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
       document.getElementById('screen-player').classList.add('active');
-      history.push('player');
+      navHistory.push('player');
     }
 
     function goBack(){
-      history.pop();
-      var prev = history[history.length - 1] || 'home';
+      navHistory.pop();
+      var prev = navHistory[navHistory.length - 1] || 'home';
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
       document.getElementById('screen-' + prev).classList.add('active');
       document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === prev); });
@@ -637,7 +627,7 @@
 
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
       document.getElementById('screen-doc').classList.add('active');
-      history.push('doc');
+      navHistory.push('doc');
     }
 
     function openPlayerFor(item){
@@ -672,7 +662,7 @@
 
       document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
       document.getElementById('screen-player').classList.add('active');
-      history.push('player');
+      navHistory.push('player');
     }
 
     var DEPT_ALIAS = {
